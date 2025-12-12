@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Income Tax Calculator — Professional</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<style>
+:root{
+  --bg:#f4f7fb; --card:#ffffff; --accent:#0b7285; --muted:#6b7176;
+  --border:rgba(18,24,30,0.08); --danger:#ef4444; --success:#10b981;
+  font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);-webkit-font-smoothing:antialiased}
+.container{max-width:1080px;margin:20px auto;padding:14px}
+.card{background:var(--card);border-radius:14px;padding:14px;box-shadow:0 12px 32px rgba(12,18,24,0.06)}
+.header{display:flex;align-items:center;justify-content:space-between}
+.title{font-size:20px;font-weight:800;margin:0}
+.help{color:var(--muted);font-size:13px}
+
+/* grid */
+.layout{display:grid;grid-template-columns:1fr;gap:14px;margin-top:12px}
+@media(min-width:980px){ .layout{grid-template-columns:420px 1fr} }
+
+/* controls */
+.section{border-radius:10px;padding:12px;border:1px solid var(--border);background:linear-gradient(#fff,#fbfdff)}
+.label{display:block;font-size:13px;color:#0b1720;margin-bottom:6px}
+.input, select {width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);font-size:15px;background:transparent}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.col{flex:1;min-width:120px}
+.small{font-size:13px;color:var(--muted);margin-top:6px}
+
+/* actions */
+.actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.btn{padding:10px 12px;border-radius:10px;border:0;cursor:pointer;font-weight:700}
+.btnPrimary{background:var(--accent);color:#fff}
+.btnGhost{background:#fff;border:1px solid var(--border)}
+
+/* results */
+.results{padding:12px;border-radius:10px;border:1px solid var(--border);background:linear-gradient(#fff,#fbfdff)}
+.resultRow{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.big{font-size:34px;font-weight:800;color:#0b1720}
+.muted{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:12px}
+@media(max-width:680px){ .grid2{grid-template-columns:1fr} }
+
+/* brackets editor */
+.brEditor{margin-top:12px;border-radius:8px;padding:8px;border:1px dashed var(--border);background:#fff}
+.brItem{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.brItem input{width:120px}
+
+/* small */
+.note{font-size:13px;color:var(--muted);margin-top:8px}
+.footer{font-size:12px;color:var(--muted);margin-top:12px}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="card" role="main" aria-labelledby="title">
+    <div class="header">
+      <h1 id="title" class="title">Income Tax Calculator</h1>
+      <div class="help">Professional • Editable brackets • Mobile + Desktop</div>
+    </div>
+
+    <div class="layout">
+      <!-- left: inputs & bracket editor -->
+      <aside class="section" aria-label="Inputs">
+        <div>
+          <label class="label">Filing status</label>
+          <select id="status" class="input">
+            <option value="single">Single</option>
+            <option value="married_joint">Married filing jointly</option>
+            <option value="married_separate">Married filing separately</option>
+            <option value="head">Head of household</option>
+          </select>
+        </div>
+
+        <div style="margin-top:10px" class="row">
+          <div class="col">
+            <label class="label">Gross annual income</label>
+            <input id="income" type="number" class="input" placeholder="e.g. 60000" />
+            <div class="small">Enter total annual pre-tax income</div>
+          </div>
+          <div class="col">
+            <label class="label">Other taxable income</label>
+            <input id="otherIncome" type="number" class="input" placeholder="bonuses, interest..." />
+            <div class="small">Optional</div>
+          </div>
+        </div>
+
+        <div style="margin-top:10px">
+          <label class="label">Adjustments / Pre-tax contributions</label>
+          <input id="adjustments" type="number" class="input" placeholder="retirement, HSA, etc." />
+          <div class="small">Amount subtracted before taxable income</div>
+        </div>
+
+        <div style="margin-top:10px">
+          <label class="label">Deductions (standard or itemized)</label>
+          <div class="row">
+            <select id="deductionType" class="input" style="max-width:220px">
+              <option value="standard">Standard deduction</option>
+              <option value="itemized">Itemized deduction (enter amount)</option>
+            </select>
+            <input id="deductionAmount" type="number" class="input" placeholder="Deduction amount (if itemized)" />
+          </div>
+          <div class="small">If standard selected but you want a specific value, use "Itemized" and enter your value.</div>
+        </div>
+
+        <div style="margin-top:12px" class="actions">
+          <button id="calcBtn" class="btn btnPrimary">Calculate</button>
+          <button id="clearBtn" class="btn btnGhost">Clear</button>
+          <button id="saveBtn" class="btn btnGhost">Save</button>
+          <button id="pngBtn" class="btn btnGhost">Export PNG</button>
+        </div>
+
+        <div style="margin-top:12px">
+          <label class="label">Preset brackets</label>
+          <select id="presetSelect" class="input">
+            <option value="sample">Sample — editable (update to your jurisdiction)</option>
+          </select>
+          <div class="small">Choose a preset then edit brackets below to match the tax year/jurisdiction.</div>
+        </div>
+
+        <div class="brEditor" id="brEditor" aria-live="polite">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <strong>Tax brackets (progressive)</strong>
+            <button id="addBracket" class="btn btnGhost" style="margin-left:auto">+ Add bracket</button>
+          </div>
+
+          <div id="bracketsList"></div>
+
+          <div style="margin-top:8px" class="note">
+            Each bracket requires a lower bound and a marginal tax rate. For the highest bracket, leave upper bound empty.
+          </div>
+        </div>
+
+        <div class="note">
+          Tip: After adjusting brackets, hit <strong>Calculate</strong>. You can save results to local storage.
+        </div>
+      </aside>
+
+      <!-- right: results -->
+      <main class="section results" id="results" aria-live="polite">
+        <div class="resultRow">
+          <div>
+            <div class="muted">Total tax (estimated)</div>
+            <div id="totalTax" class="big">—</div>
+            <div class="small" id="effectiveRate">Effective tax rate: —</div>
+          </div>
+          <div style="margin-left:auto;text-align:right">
+            <div class="muted">Marginal rate</div>
+            <div id="marginal" style="font-weight:800;font-size:20px">—</div>
+            <div class="small" id="afterTax">After-tax annual: —</div>
+          </div>
+        </div>
+
+        <div class="grid2">
+          <div class="section">
+            <div style="font-weight:700">Taxable income</div>
+            <div id="taxableIncome" style="font-size:18px;margin-top:6px">—</div>
+            <div class="muted small" style="margin-top:6px">(Gross − adjustments − deductions)</div>
+          </div>
+
+          <div class="section">
+            <div style="font-weight:700">Breakdown</div>
+            <div id="breakdown" style="margin-top:8px">—</div>
+          </div>
+
+          <div class="section">
+            <div style="font-weight:700">Per period</div>
+            <div style="margin-top:8px">
+              <div>Monthly after-tax: <strong id="monthly">—</strong></div>
+              <div>Weekly after-tax: <strong id="weekly">—</strong></div>
+              <div>Hourly (40h/wk): <strong id="hourly">—</strong></div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div style="font-weight:700">Notes</div>
+            <div class="muted small" style="margin-top:8px">
+              This tool provides estimates only. It does not calculate credits, AMT, state taxes, or other special rules. Edit brackets to match exact rates for your year/jurisdiction.
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:12px">
+          <button id="copySummary" class="btn btnGhost">Copy summary</button>
+        </div>
+      </main>
+    </div>
+
+    <div class="footer">
+      Built for GitHub Pages / Elementor. Update presets and brackets for your tax year. Data stored locally only.
+    </div>
+  </div>
+</div>
+
+<script>
+/* Income tax calculator JS
+   - progressive bracket engine
+   - editable bracket UI
+   - sample preset
+   - save/export/copy
+*/
+
+/* utilities */
+const $ = sel => document.querySelector(sel);
+const $$ = sel => Array.from(document.querySelectorAll(sel));
+const fmt = n => (typeof n !== 'number' || isNaN(n)) ? '—' : n.toLocaleString(undefined, {maximumFractionDigits:0});
+
+/* DOM nodes */
+const incomeEl = $('#income'), otherIncomeEl = $('#otherIncome'), adjustmentsEl = $('#adjustments');
+const deductionTypeEl = $('#deductionType'), deductionAmountEl = $('#deductionAmount');
+const statusEl = $('#status');
+const calcBtn = $('#calcBtn'), clearBtn = $('#clearBtn'), saveBtn = $('#saveBtn'), pngBtn = $('#pngBtn');
+const presetSelect = $('#presetSelect'), bracketsList = $('#bracketsList'), addBracketBtn = $('#addBracket');
+const totalTaxEl = $('#totalTax'), taxableIncomeEl = $('#taxableIncome'), breakdownEl = $('#breakdown');
+const marginalEl = $('#marginal'), effectiveRateEl = $('#effectiveRate'), afterTaxEl = $('#afterTax');
+const monthlyEl = $('#monthly'), weeklyEl = $('#weekly'), hourlyEl = $('#hourly');
+const copySummaryBtn = $('#copySummary');
+
+/* default sample preset (editable) */
+/* NOTE: sample numbers are illustrative. Update to the exact schedule you want. */
+const presets = {
+  sample: {
+    name: 'Sample — edit to match jurisdiction',
+    // per filing status you can have different standard deductions (example)
+    standardDeduction: {
+      single: 12950,
+      married_joint: 25900,
+      married_separate: 12950,
+      head: 19400
+    },
+    // brackets: array of { from: lowerBoundInclusive, to: upperBoundExclusive (null=top), rate: percent }
+    // lower bound must be >=0 and sorted ascending
+    brackets: [
+      { from: 0, to: 11000, rate: 10 },
+      { from: 11000, to: 44725, rate: 12 },
+      { from: 44725, to: 95375, rate: 22 },
+      { from: 95375, to: 182100, rate: 24 },
+      { from: 182100, to: 231250, rate: 32 },
+      { from: 231250, to: 578125, rate: 35 },
+      { from: 578125, to: null, rate: 37 }
+    ]
+  }
+};
+
+/* state */
+let currentPresetKey = 'sample';
+let brackets = JSON.parse(JSON.stringify(presets.sample.brackets));
+let standardDeduction = presets.sample.standardDeduction;
+
+/* UI: render brackets editor */
+function renderBrackets(){
+  bracketsList.innerHTML = '';
+  brackets.forEach((b,i)=>{
+    const wrapper = document.createElement('div'); wrapper.className='brItem';
+    const from = document.createElement('input'); from.type='number'; from.value = b.from; from.placeholder='from';
+    const to = document.createElement('input'); to.type='number'; to.value = b.to===null?'':b.to; to.placeholder='to (leave empty = top)';
+    const rate = document.createElement('input'); rate.type='number'; rate.value = b.rate; rate.placeholder='rate %';
+    const up = document.createElement('button'); up.className='btn btnGhost'; up.textContent='↑';
+    const down = document.createElement('button'); down.className='btn btnGhost'; down.textContent='↓';
+    const del = document.createElement('button'); del.className='btn btnGhost'; del.textContent='✕';
+    wrapper.appendChild(from); wrapper.appendChild(to); wrapper.appendChild(rate); wrapper.appendChild(up); wrapper.appendChild(down); wrapper.appendChild(del);
+    bracketsList.appendChild(wrapper);
+
+    from.addEventListener('change', ()=>{ b.from = Number(from.value || 0); sortBrackets(); renderBrackets(); });
+    to.addEventListener('change', ()=>{ const v = to.value.trim(); b.to = v === '' ? null : Number(v); sortBrackets(); renderBrackets(); });
+    rate.addEventListener('change', ()=>{ b.rate = Number(rate.value || 0); });
+    up.addEventListener('click', ()=>{
+      if(i<=0) return;
+      [brackets[i-1], brackets[i]] = [brackets[i], brackets[i-1]];
+      renderBrackets();
+    });
+    down.addEventListener('click', ()=>{
+      if(i>=brackets.length-1) return;
+      [brackets[i+1], brackets[i]] = [brackets[i], brackets[i+1]];
+      renderBrackets();
+    });
+    del.addEventListener('click', ()=>{ brackets.splice(i,1); renderBrackets(); });
+  });
+}
+
+/* helpers */
+function sortBrackets(){
+  brackets.sort((a,b)=> (a.from - b.from) || ( (a.to||Infinity) - (b.to||Infinity) ));
+}
+
+/* add bracket */
+addBracketBtn.addEventListener('click', ()=>{
+  // add a new bracket above top by default
+  brackets.push({ from: 0, to: null, rate: 0 });
+  sortBrackets();
+  renderBrackets();
+});
+
+/* preset selection */
+presetSelect.addEventListener('change', ()=>{
+  const key = presetSelect.value;
+  if(!presets[key]) return;
+  currentPresetKey = key;
+  brackets = JSON.parse(JSON.stringify(presets[key].brackets));
+  standardDeduction = presets[key].standardDeduction;
+  // set deduction amount if standard selected
+  if(deductionTypeEl.value === 'standard'){
+    const val = standardDeduction[statusEl.value] || 0;
+    deductionAmountEl.value = val;
+  }
+  renderBrackets();
+});
+
+/* initial populate preset select & load */
+function initPresets(){
+  presetSelect.innerHTML = '';
+  Object.keys(presets).forEach(k=>{
+    const opt = document.createElement('option'); opt.value=k; opt.textContent = presets[k].name; presetSelect.appendChild(opt);
+  });
+  presetSelect.value = currentPresetKey;
+  brackets = JSON.parse(JSON.stringify(presets[currentPresetKey].brackets));
+  standardDeduction = presets[currentPresetKey].standardDeduction;
+  // if standard selected, prefill deduction amount with standard
+  if(deductionTypeEl.value === 'standard'){
+    deductionAmountEl.value = standardDeduction[statusEl.value] || '';
+  }
+  renderBrackets();
+}
+initPresets();
+
+/* when filing status changes and deduction type=standard, update deduction field */
+statusEl.addEventListener('change', ()=>{
+  if(deductionTypeEl.value === 'standard'){
+    deductionAmountEl.value = standardDeduction[statusEl.value] || '';
+  }
+});
+
+/* when deduction type toggled */
+deductionTypeEl.addEventListener('change', ()=>{
+  if(deductionTypeEl.value === 'standard'){
+    deductionAmountEl.value = standardDeduction[statusEl.value] || '';
+    deductionAmountEl.disabled = false;
+  } else {
+    // keep editable
+    deductionAmountEl.value = '';
+    deductionAmountEl.disabled = false;
+  }
+});
+
+/* progressive tax compute */
+function computeTax(taxable, bracketsIn){
+  // bracketsIn assumed sorted ascending by from
+  let remaining = taxable;
+  if(remaining <= 0) return { total:0, breakdown:[], marginalRate:0 };
+  let total = 0;
+  const breakdown = [];
+  for(let i=0;i<bracketsIn.length;i++){
+    const b = bracketsIn[i];
+    const lower = Number(b.from || 0);
+    const upper = (b.to === null || b.to === undefined) ? Infinity : Number(b.to);
+    if(taxable <= lower) {
+      // no income in this bracket
+      breakdown.push({ from: lower, to: upper===Infinity?null:upper, rate:b.rate, taxed:0, tax:0 });
+      continue;
+    }
+    const taxableInBracket = Math.min(taxable, upper) - lower;
+    if(taxableInBracket > 0){
+      const tax = taxableInBracket * (b.rate/100);
+      total += tax;
+      breakdown.push({ from: lower, to: upper===Infinity?null:upper, rate:b.rate, taxed:taxableInBracket, tax });
+    } else {
+      breakdown.push({ from: lower, to: upper===Infinity?null:upper, rate:b.rate, taxed:0, tax:0});
+    }
+    if(upper === Infinity) break;
+  }
+  // marginal rate is the rate of the highest bracket that had taxed>0
+  let marginal = 0;
+  for(let i=breakdown.length-1;i>=0;i--){
+    if(breakdown[i].taxed > 0){ marginal = breakdown[i].rate; break; }
+  }
+  return { total, breakdown, marginalRate: marginal };
+}
+
+/* render breakdown HTML */
+function renderBreakdownHtml(bd){
+  if(!bd || bd.length===0) return '—';
+  const ul = document.createElement('div');
+  bd.forEach(item=>{
+    const row = document.createElement('div');
+    const range = item.to === null ? `${fmt(item.from)}+` : `${fmt(item.from)} – ${fmt(item.to)}`;
+    row.innerHTML = `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--border)">
+      <div><strong>${range}</strong> @ ${item.rate}%</div>
+      <div>${fmt(item.tax)} tax on ${item.taxed>0 ? fmt(item.taxed) : '0'}</div>
+    </div>`;
+    ul.appendChild(row);
+  });
+  return ul.innerHTML;
+}
+
+/* main calculate handler */
+function calculate(){
+  sortBrackets(); // ensure order
+  // read inputs
+  const gross = Number(incomeEl.value) || 0;
+  const other = Number(otherIncomeEl.value) || 0;
+  const adjustments = Number(adjustmentsEl.value) || 0;
+  let deduction = Number(deductionAmountEl.value) || 0;
+  if(deductionTypeEl.value === 'standard'){
+    deduction = standardDeduction[statusEl.value] || deduction;
+  }
+  const totalIncome = gross + other;
+  // taxable income
+  let taxable = totalIncome - adjustments - deduction;
+  if(taxable < 0) taxable = 0;
+
+  // compute progressive tax
+  const { total, breakdown, marginalRate } = computeTax(taxable, brackets);
+
+  const totalTax = Math.round(total);
+  const effectiveRate = taxable>0 ? (totalTax / taxable * 100) : 0;
+  const afterTax = Math.round(totalIncome - totalTax);
+  const monthlyAfter = Math.round(afterTax / 12);
+  const weeklyAfter = Math.round(afterTax / 52);
+  const hourlyAfter = Math.round(weeklyAfter / 40 * 1); // approximate (weekly hours)
+
+  // render
+  totalTaxEl.textContent = fmt(totalTax) + ' (annual)';
+  effectiveRateEl.textContent = `Effective tax rate: ${effectiveRate.toFixed(2)}%`;
+  marginalEl.textContent = `${marginalRate}%`;
+  taxableIncomeEl.textContent = fmt(taxable);
+  breakdownEl.innerHTML = renderBreakdownHtml(breakdown);
+  afterTaxEl.textContent = `After-tax: ${fmt(afterTax)} per year`;
+  monthlyEl.textContent = fmt(monthlyAfter);
+  weeklyEl.textContent = fmt(weeklyAfter);
+  hourlyEl.textContent = fmt(hourlyAfter);
+
+  // store last result for copying/export
+  lastResult = { totalTax: totalTax, effectiveRate, marginalRate, taxable, afterTax, monthlyAfter, weeklyAfter, hourlyAfter, breakdown };
+}
+
+/* clear handler */
+clearBtn.addEventListener('click', ()=>{
+  ['#income','#otherIncome','#adjustments','#deductionAmount'].forEach(sel=>{ const el = document.querySelector(sel); if(el) el.value=''; });
+  // reset displays
+  totalTaxEl.textContent = '—';
+  effectiveRateEl.textContent = 'Effective tax rate: —';
+  marginalEl.textContent = '—';
+  taxableIncomeEl.textContent = '—';
+  breakdownEl.innerHTML = '—';
+  afterTaxEl.textContent = 'After-tax annual: —';
+  monthlyEl.textContent = weeklyEl.textContent = hourlyEl.textContent = '—';
+  lastResult = null;
+});
+
+/* save results to localStorage */
+saveBtn.addEventListener('click', ()=>{
+  if(!lastResult){ alert('Calculate first.'); return; }
+  const key = 'income_tax_history';
+  const arr = JSON.parse(localStorage.getItem(key) || '[]');
+  arr.unshift({ ts: new Date().toISOString(), inputs: {
+    gross: Number(incomeEl.value)||0,
+    other: Number(otherIncomeEl.value)||0,
+    adjustments: Number(adjustmentsEl.value)||0,
+    deduction: Number(deductionAmountEl.value)||0,
+    status: statusEl.value
+  }, result: lastResult });
+  if(arr.length>200) arr.length = 200;
+  localStorage.setItem(key, JSON.stringify(arr));
+  alert('Saved to local storage.');
+});
+
+/* export PNG */
+pngBtn.addEventListener('click', ()=>{
+  html2canvas($('.results'), { scale:2, backgroundColor: null }).then(canvas=>{
+    const url = canvas.toDataURL('image/png');
+    const a = document.createElement('a'); a.href = url; a.download = 'tax_result.png'; document.body.appendChild(a); a.click(); a.remove();
+  }).catch(()=>alert('PNG export failed'));
+});
+
+/* copy summary */
+copySummaryBtn.addEventListener('click', ()=>{
+  if(!lastResult){ alert('Calculate first.'); return; }
+  const s = lastResult;
+  const txt = `Tax estimate: ${s.totalTax} • Effective: ${s.effectiveRate.toFixed(2)}% • Marginal: ${s.marginalRate}% • Taxable: ${s.taxable} • After tax: ${s.afterTax}`;
+  if(navigator.clipboard) navigator.clipboard.writeText(txt).then(()=>alert('Copied summary to clipboard.'));
+  else prompt('Copy:', txt);
+});
+
+/* allow enter key in income fields to calculate */
+['#income','#otherIncome','#adjustments','#deductionAmount'].forEach(sel=>{
+  const el = document.querySelector(sel);
+  if(!el) return;
+  el.addEventListener('keydown', e=>{
+    if(e.key === 'Enter'){ e.preventDefault(); calculate(); }
+  });
+});
+
+calcBtn.addEventListener('click', calculate);
+
+/* small initialization */
+renderBrackets();
+let lastResult = null;
+
+/* prefill some demo values for convenience */
+incomeEl.value = 60000;
+deductionTypeEl.value = 'standard';
+deductionAmountEl.value = standardDeduction[statusEl.value] || '';
+</script>
+</body>
+</html>
