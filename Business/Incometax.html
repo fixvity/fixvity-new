@@ -3,564 +3,618 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Income Tax Calculator — Live Currency</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<title>Income Tax Calculator — Currency conversion</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#f4f7f8; --card:#fff; --accent:#2b8a78; --muted:#6b7176;
-    --panel:#e9f6f2; --border:rgba(13,20,25,0.06);
+    --bg:#f4f6f8; --card:#ffffff; --accent:#2b7a4a; --muted:#6b7176;
+    --panel:#e9f6f0; --border:rgba(10,20,30,0.08);
     font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;
   }
-  html,body{height:100%;margin:0;background:var(--bg);-webkit-font-smoothing:antialiased}
-  .wrap{max-width:1100px;margin:18px auto;padding:18px}
-  .card{background:var(--card);border-radius:12px;padding:18px;box-shadow:0 10px 26px rgba(12,18,24,0.06)}
-  h1{margin:0 0 12px;font-size:20px}
-  .grid{display:grid;grid-template-columns:1fr 420px;gap:18px}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:#0b1720;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1100px;margin:18px auto;padding:14px}
+  .card{background:var(--card);border-radius:14px;padding:14px;border:1px solid var(--border);box-shadow:0 8px 18px rgba(12,18,24,0.04)}
+  .header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+  .title{font-size:20px;margin:0;font-weight:800}
+  .subtitle{color:var(--muted);font-size:13px}
+  .grid{display:grid;grid-template-columns:1fr 380px;gap:16px}
   @media(max-width:980px){ .grid{grid-template-columns:1fr} }
 
   /* form */
-  .form{padding:12px;border-radius:10px;border:1px solid var(--border);background:linear-gradient(#fff,#fbffff)}
-  .row{display:flex;gap:12px;align-items:center;margin-bottom:12px}
-  .col{flex:1}
-  label{display:block;font-size:14px;color:var(--muted);margin-bottom:6px}
-  input[type="text"], input[type="number"], select{
-    width:100%;padding:12px;border-radius:8px;border:1px solid rgba(10,40,60,0.08);
-    font-size:16px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.6)
+  form{display:flex;flex-direction:column;gap:12px}
+  .row{display:flex;gap:12px;flex-wrap:wrap}
+  .col{flex:1;min-width:120px}
+  label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+  input[type="text"], input[type="number"], select{width:100%;padding:12px;border-radius:10px;border:1px solid var(--border);font-size:15px;background:#fff}
+  .big{font-size:18px;padding:14px}
+  .group{padding:10px;border-radius:10px;background:#fff;border:1px solid var(--border)}
+  .sectionTitle{background:#154a6a;color:#fff;padding:6px 10px;border-radius:8px;font-weight:700;margin-bottom:8px}
+
+  .controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .btn{padding:10px 14px;border-radius:10px;border:0;cursor:pointer;font-weight:700}
+  .btnPrimary{background:var(--accent);color:#fff}
+  .btnGhost{background:#fff;border:1px solid var(--border);color:#0b1720}
+  .btnWarn{background:#f59e0b;color:#fff}
+
+  /* results panel (right column) */
+  .results{padding:14px;border-radius:10px;background:linear-gradient(180deg,#fff,#fbf);border:1px solid var(--border)}
+  .resultHeader{display:flex;align-items:center;justify-content:space-between}
+  .bigNum{font-size:36px;font-weight:800;color:var(--accent)}
+  .fsRight{font-size:14px;color:var(--muted)}
+  .summary{margin-top:12px;border-radius:8px;overflow:hidden}
+  .rowItem{display:flex;align-items:center;justify-content:space-between;padding:12px;border-bottom:1px solid rgba(12,18,24,0.04);background:#fff}
+  .rowItem.bold{font-weight:800;background:var(--panel)}
+  .smallNote{font-size:13px;color:var(--muted);margin-top:8px}
+
+  .convBox{display:flex;gap:8px;align-items:center}
+  .convBox input{max-width:120px;padding:8px}
+
+  /* compact table for mobile */
+  @media(max-width:600px){
+    .bigNum{font-size:28px}
+    .grid{gap:10px}
+    .results{order:-1} /* show results above on mobile */
   }
-  .small{max-width:150px}
-  .btn{display:inline-block;padding:10px 14px;border-radius:8px;border:0;background:var(--accent);color:#fff;font-weight:700;cursor:pointer}
-  .btn.ghost{background:#fff;border:1px solid var(--border);color:#111}
-  .legend{font-size:13px;color:var(--muted);margin-bottom:8px}
 
-  /* results */
-  .results{padding:12px;border-radius:10px;border:1px solid var(--border);background:linear-gradient(#fff,#fbffff)}
-  .big{font-size:36px;font-weight:800;color:#0b3b34;margin:8px 0}
-  .summary{display:flex;justify-content:space-between;align-items:center;gap:12px}
-  .summary .left{flex:1}
-  .table{margin-top:12px;border-collapse:collapse;width:100%}
-  .table td{padding:10px;border-bottom:1px solid #eef2f2}
-  .table .label{color:var(--muted)}
-  .table .value{text-align:right;font-weight:700}
-
-  /* currency row */
-  .ratesRow{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
-  .ratesRow .note{font-size:13px;color:var(--muted)}
-  .inline{display:inline-flex;gap:8px;align-items:center}
-
-  /* footer small */
-  .smallNote{font-size:12px;color:var(--muted);margin-top:12px}
-
+  footer{margin-top:14px;color:var(--muted);font-size:13px}
+  .muted{color:var(--muted)}
+  .inline{display:inline-block}
+  .flex{display:flex;gap:8px;align-items:center}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="card" role="main" aria-labelledby="title">
-    <h1 id="title">Income Tax Calculator — Live Currency</h1>
-    <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
-      <div class="legend">Rates source: <strong>Frankfurter public API</strong> (no API key needed).</div>
-      <div style="margin-left:auto" id="rateStatus">Rates: <span id="rateTime">—</span></div>
-    </div>
-
-    <div class="grid">
-      <!-- LEFT: Inputs -->
-      <section class="form" aria-label="Inputs">
-        <div class="row">
-          <div class="col small">
-            <label for="currencyFrom">Input currency</label>
-            <select id="currencyFrom">
-              <option value="USD">USD — US Dollar</option>
-              <option value="EUR">EUR — Euro</option>
-              <option value="GBP">GBP — British Pound</option>
-              <option value="INR">INR — Indian Rupee</option>
-              <option value="AUD">AUD — Australian Dollar</option>
-              <option value="CAD">CAD — Canadian Dollar</option>
-            </select>
-          </div>
-
-          <div class="col small">
-            <label for="currencyTo">Display currency</label>
-            <select id="currencyTo">
-              <option value="USD">USD — US Dollar</option>
-              <option value="EUR">EUR — Euro</option>
-              <option value="GBP">GBP — British Pound</option>
-              <option value="INR">INR — Indian Rupee</option>
-              <option value="AUD">AUD — Australian Dollar</option>
-              <option value="CAD">CAD — Canadian Dollar</option>
-            </select>
-          </div>
-
-          <div style="margin-left:auto" class="inline">
-            <button id="btnRefresh" class="btn ghost">Refresh rates</button>
-            <label style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px">
-              <input id="autoRefresh" type="checkbox" /> auto-refresh (30m)
-            </label>
-          </div>
+  <div class="wrap">
+    <div class="card">
+      <div class="header">
+        <div>
+          <h1 class="title">Income Tax Calculator</h1>
+          <div class="subtitle">Responsive estimator — demo preset available + currency conversion</div>
         </div>
 
-        <hr style="border:none;border-top:1px solid #eef2f2;margin:10px 0" />
+        <div class="controls">
+          <label class="muted" style="font-size:13px;margin-right:6px">Current currency</label>
+          <select id="currency" aria-label="Currency">
+            <option value="USD">$ USD</option>
+            <option value="EUR">€ EUR</option>
+            <option value="INR">₹ INR</option>
+          </select>
+          <div class="convBox" title="Editable conversion rates (relative to USD)">
+            <label class="muted" style="font-size:13px;margin-right:6px">Rates (1 USD =)</label>
+            <input id="rateUSD" type="number" step="0.0001" value="1" />
+            <input id="rateEUR" type="number" step="0.0001" value="0.92" />
+            <input id="rateINR" type="number" step="0.01" value="83.50" />
+          </div>
+          <button id="convertBtn" class="btn btnGhost" title="Convert all numeric inputs from current currency to selected target currency">Convert values</button>
+          <button id="loadDemo" class="btn btnGhost">Load Demo</button>
+        </div>
+      </div>
 
-        <div class="row">
-          <div class="col">
-            <label for="fileStatus">Filing status</label>
-            <select id="fileStatus">
-              <option value="single">Single</option>
-              <option value="married_joint">Married filing jointly</option>
-              <option value="married_separate">Married filing separately</option>
-              <option value="head">Head of household</option>
-              <option value="widow">Qualified widow(er)</option>
-            </select>
-          </div>
-          <div class="col small">
-            <label for="taxYear">Tax year (return filed)</label>
-            <select id="taxYear"></select>
-          </div>
+      <div class="grid">
+        <!-- LEFT: INPUTS -->
+        <div>
+          <form id="taxForm" onsubmit="return false;" autocomplete="off">
+            <div class="group">
+              <div class="sectionTitle">Filing & Basic</div>
+              <div class="row">
+                <div class="col">
+                  <label for="filing">Filing status</label>
+                  <select id="filing">
+                    <option value="single">Single</option>
+                    <option value="married_joint">Married filing jointly</option>
+                    <option value="married_separate">Married filing separately</option>
+                    <option value="head">Head of household</option>
+                    <option value="widow">Qualified widow(er)</option>
+                  </select>
+                </div>
+                <div class="col">
+                  <label for="age">Age</label>
+                  <input id="age" type="number" min="0" value="30" />
+                </div>
+                <div class="col">
+                  <label for="taxYearSelect">Tax year</label>
+                  <select id="taxYearSelect"></select>
+                </div>
+              </div>
+            </div>
+
+            <div class="group" style="margin-top:12px">
+              <div class="sectionTitle">Income</div>
+
+              <div class="row">
+                <div class="col">
+                  <label for="wages">Wages, tips, compensation</label>
+                  <input id="wages" class="num" type="number" value="0" />
+                </div>
+                <div class="col">
+                  <label for="interest">Interest income</label>
+                  <input id="interest" class="num" type="number" value="0" />
+                </div>
+              </div>
+
+              <div class="row" style="margin-top:8px">
+                <div class="col">
+                  <label for="dividends">Ordinary dividends</label>
+                  <input id="dividends" class="num" type="number" value="0" />
+                </div>
+                <div class="col">
+                  <label for="qualifiedDiv">Qualified dividends</label>
+                  <input id="qualifiedDiv" class="num" type="number" value="0" />
+                </div>
+              </div>
+
+              <div class="row" style="margin-top:8px">
+                <div class="col">
+                  <label for="stcg">Short-term capital gains</label>
+                  <input id="stcg" class="num" type="number" value="0" />
+                </div>
+                <div class="col">
+                  <label for="ltcg">Long-term capital gains</label>
+                  <input id="ltcg" class="num" type="number" value="0" />
+                </div>
+              </div>
+
+              <div class="row" style="margin-top:8px">
+                <div class="col">
+                  <label for="selfBiz">Business / Self-employment net</label>
+                  <input id="selfBiz" class="num" type="number" value="0" />
+                </div>
+                <div class="col">
+                  <label for="passive">Passive / rental / other</label>
+                  <input id="passive" class="num" type="number" value="0" />
+                </div>
+              </div>
+
+              <div class="row" style="margin-top:8px">
+                <div class="col">
+                  <label for="social">Social security income</label>
+                  <input id="social" class="num" type="number" value="0" />
+                </div>
+                <div class="col">
+                  <label for="otherIncome">Other income (tips, overtime, pensions)</label>
+                  <input id="otherIncome" class="num" type="number" value="0" />
+                </div>
+              </div>
+            </div>
+
+            <div class="group" style="margin-top:12px">
+              <div class="sectionTitle">Withholdings & Pre-payments</div>
+              <div class="row">
+                <div class="col">
+                  <label for="fedWithheld">Federal income tax withheld</label>
+                  <input id="fedWithheld" class="num" type="number" value="0" />
+                </div>
+                <div class="col">
+                  <label for="stateWithheld">State income tax withheld</label>
+                  <input id="stateWithheld" class="num" type="number" value="0" />
+                </div>
+              </div>
+
+              <div class="row" style="margin-top:8px">
+                <div class="col">
+                  <label for="prepayments">Estimated tax pre-payments</label>
+                  <input id="prepayments" class="num" type="number" value="0" />
+                </div>
+                <div class="col">
+                  <label for="otherWith">Local / other withheld</label>
+                  <input id="otherWith" class="num" type="number" value="0" />
+                </div>
+              </div>
+            </div>
+
+            <div class="group" style="margin-top:12px">
+              <div class="sectionTitle">Deductions & Credits</div>
+
+              <div class="row">
+                <div class="col">
+                  <label for="mortgage">Mortgage interest</label>
+                  <input id="mortgage" class="num" type="number" value="0" />
+                </div>
+                <div class="col">
+                  <label for="realEstate">Real estate taxes</label>
+                  <input id="realEstate" class="num" type="number" value="0" />
+                </div>
+              </div>
+
+              <div class="row" style="margin-top:8px">
+                <div class="col">
+                  <label for="charity">Charitable donations</label>
+                  <input id="charity" class="num" type="number" value="0" />
+                </div>
+                <div class="col">
+                  <label for="studentLoan">Student loan interest</label>
+                  <input id="studentLoan" class="num" type="number" value="0" />
+                </div>
+              </div>
+
+              <div class="row" style="margin-top:8px">
+                <div class="col">
+                  <label for="ira">IRA contributions</label>
+                  <input id="ira" class="num" type="number" value="0" />
+                </div>
+                <div class="col">
+                  <label for="otherDed">Other deductibles</label>
+                  <input id="otherDed" class="num" type="number" value="0" />
+                </div>
+              </div>
+
+              <div style="margin-top:8px" class="row">
+                <div class="col">
+                  <label for="childCare">Child & dependent care (eligible)</label>
+                  <input id="childCare" class="num" type="number" value="0" />
+                </div>
+                <div class="col">
+                  <label for="college1">College expenses (student 1)</label>
+                  <input id="college1" class="num" type="number" value="0" />
+                </div>
+              </div>
+
+              <div style="margin-top:8px" class="row">
+                <div class="col">
+                  <label for="ctc">Child tax credit (total)</label>
+                  <input id="ctc" class="num" type="number" value="0" />
+                </div>
+                <div class="col">
+                  <label for="otherCredits">Other tax credits</label>
+                  <input id="otherCredits" class="num" type="number" value="0" />
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:10px;margin-top:12px;align-items:center">
+              <button id="calculateBtn" class="btn btnPrimary">Calculate</button>
+              <button id="exampleBtn" class="btn btnGhost">Load example</button>
+              <button id="clearBtn" class="btn btnGhost">Clear</button>
+            </div>
+
+          </form>
         </div>
 
-        <div class="row">
-          <div class="col small">
-            <label for="age">Age</label>
-            <input id="age" type="number" min="0" value="30" />
+        <!-- RIGHT: RESULTS -->
+        <aside class="results" aria-live="polite">
+          <div class="resultHeader">
+            <div>
+              <div class="muted">Estimated refund / balance for <span id="resYear"></span></div>
+              <div id="estAmount" class="bigNum">$0</div>
+            </div>
+            <div class="fsRight" id="resFiling">Filing: Single</div>
           </div>
-          <div class="col small">
-            <label for="dependYoung"># young dependents (0-16)</label>
-            <input id="dependYoung" type="number" min="0" value="0" />
-          </div>
-          <div class="col small">
-            <label for="dependOther"># other dependents</label>
-            <input id="dependOther" type="number" min="0" value="0" />
-          </div>
-        </div>
 
-        <h3 style="margin-top:8px">Income (enter amounts in input currency)</h3>
-        <div class="row">
-          <div class="col">
-            <label for="wages">Wages, tips, other compensation</label>
-            <input id="wages" type="number" step="0.01" value="8000" />
-          </div>
-        </div>
+          <div class="summary" id="summaryBox" role="region" aria-label="Summary results" style="margin-top:12px">
+            <div class="rowItem rowItemTitle rowItem bold">
+              <div>Total Income</div><div id="totalIncome">$0</div>
+            </div>
 
-        <div class="row">
-          <div class="col">
-            <label for="interest">Interest income (1099-INT)</label>
-            <input id="interest" type="number" step="0.01" value="0" />
-          </div>
-          <div class="col">
-            <label for="dividends">Ordinary dividends</label>
-            <input id="dividends" type="number" step="0.01" value="0" />
-          </div>
-        </div>
+            <div class="rowItem">
+              <div>Wages & Compensation</div><div id="rWages">$0</div>
+            </div>
+            <div class="rowItem">
+              <div>Interest & Dividends</div><div id="rInterest">$0</div>
+            </div>
+            <div class="rowItem">
+              <div>Capital gains (ST/LT)</div><div id="rCG">$0</div>
+            </div>
+            <div class="rowItem">
+              <div>Business / Passive / Other</div><div id="rOther">$0</div>
+            </div>
 
-        <div class="row">
-          <div class="col">
-            <label for="stgains">Short-term capital gains</label>
-            <input id="stgains" type="number" step="0.01" value="0" />
-          </div>
-          <div class="col">
-            <label for="ltgains">Long-term capital gains</label>
-            <input id="ltgains" type="number" step="0.01" value="0" />
-          </div>
-        </div>
+            <div class="rowItem bold" style="margin-top:6px">
+              <div>Total Deductions</div><div id="totalDed">$0</div>
+            </div>
 
-        <div class="row">
-          <div class="col">
-            <label for="business">Business / passive / other</label>
-            <input id="business" type="number" step="0.01" value="0" />
+            <div class="rowItem">
+              <div>Taxable Income</div><div id="taxable">$0</div>
+            </div>
+
+            <div class="rowItem bold">
+              <div>Regular Taxes (federal)</div><div id="regularTax">$0</div>
+            </div>
+
+            <div class="rowItem">
+              <div>All Tax Credits</div><div id="allCredits">$0</div>
+            </div>
+
+            <div class="rowItem bold">
+              <div>Total Tax with Credits</div><div id="taxWithCredits">$0</div>
+            </div>
+
+            <div class="rowItem">
+              <div>Federal tax withheld + prepayments</div><div id="prepayTotal">$0</div>
+            </div>
+
+            <div class="rowItem bold">
+              <div>Estimated refund</div><div id="finalRefund">$0</div>
+            </div>
           </div>
-          <div class="col">
-            <label for="prepayments">Federal tax withheld / prepayments</label>
-            <input id="prepayments" type="number" step="0.01" value="6000" />
-          </div>
-        </div>
 
-        <h3 style="margin-top:8px">Deductions & credits / other</h3>
+          <div class="smallNote">This tool provides an estimate. For accurate filing consult a tax professional.</div>
+        </aside>
+      </div>
 
-        <div class="row">
-          <div class="col">
-            <label for="charity">Charitable donations</label>
-            <input id="charity" type="number" step="0.01" value="0" />
-          </div>
-          <div class="col">
-            <label for="mortgage">Mortgage interest</label>
-            <input id="mortgage" type="number" step="0.01" value="0" />
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="col">
-            <label for="ira">IRA / Retirement contributions</label>
-            <input id="ira" type="number" step="0.01" value="0" />
-          </div>
-          <div class="col">
-            <label for="otherDed">Other deductible expenses</label>
-            <input id="otherDed" type="number" step="0.01" value="200" />
-          </div>
-        </div>
-
-        <div style="display:flex;gap:10px;margin-top:12px">
-          <button id="btnCalc" class="btn">Calculate</button>
-          <button id="btnClear" class="btn ghost">Clear</button>
-        </div>
-
-        <div class="smallNote">Tip: choose input/display currency then Refresh rates. Rates are courtesy of Frankfurter API (no key required). 1</div>
-      </section>
-
-      <!-- RIGHT: Results -->
-      <aside class="results" aria-live="polite">
-        <div class="summary">
-          <div class="left">
-            <div style="font-size:13px;color:var(--muted)">Estimated refund / balance for <span id="displayYear">—</span></div>
-            <div class="big" id="estimatedAmount">—</div>
-            <div style="font-size:13px;color:var(--muted)">Filing status: <strong id="displayStatus">—</strong></div>
-          </div>
-        </div>
-
-        <table class="table" role="table" aria-label="Summary">
-          <tr><td class="label">Total Income</td><td class="value" id="out_totalIncome">—</td></tr>
-          <tr><td class="label">Wages & Compensation</td><td class="value" id="out_wages">—</td></tr>
-          <tr><td class="label">Interest & Dividends</td><td class="value" id="out_interest">—</td></tr>
-          <tr><td class="label">Capital gains (ST/LT)</td><td class="value" id="out_gains">—</td></tr>
-          <tr><td class="label">Business / Passive / Other</td><td class="value" id="out_business">—</td></tr>
-          <tr style="background:var(--panel)"><td class="label">Total Deductions</td><td class="value" id="out_deductions">—</td></tr>
-          <tr><td class="label">Taxable Income</td><td class="value" id="out_taxable">—</td></tr>
-          <tr style="background:var(--panel)"><td class="label">Regular Taxes (federal)</td><td class="value" id="out_taxes">—</td></tr>
-          <tr><td class="label">All Tax Credits</td><td class="value" id="out_credits">—</td></tr>
-          <tr style="background:var(--panel)"><td class="label">Total Tax with Credits</td><td class="value" id="out_totalTax">—</td></tr>
-          <tr><td class="label">Federal tax withheld + prepayments</td><td class="value" id="out_withheld">—</td></tr>
-          <tr style="background:#eefef6"><td class="label">Estimated refund</td><td class="value" id="out_refund">—</td></tr>
-        </table>
-
-        <div class="smallNote" id="rateNote">Converted display currency values use latest live rates.</div>
-      </aside>
+      <footer style="margin-top:14px" class="muted">Conversion modifies numeric inputs (you can undo manually). Rates are editable and used for conversion.</footer>
     </div>
   </div>
-</div>
 
 <script>
-/* Live-currency income tax calculator
-   - Uses Frankfurter public API (no API key). See: https://www.frankfurter.app/
-   - All money inputs are entered in "input currency" (currencyFrom).
-   - For internal calc we convert into a base "USD" for taxation logic (you can change).
-   - For display we convert to "currencyTo" and show converted values next to results.
-   - Basic tax calculation placeholder provided (simple progressive US-like brackets for example).
-*/
+/* === helpers and setup === */
+const $ = id => document.getElementById(id);
+const numericInputs = () => Array.from(document.querySelectorAll('input.num'));
+const currencySelector = $('currency');
+const rateUSD = $('rateUSD'), rateEUR = $('rateEUR'), rateINR = $('rateINR');
 
-/* -------------------------
-   Utilities & DOM bindings
-   ------------------------- */
-const $ = sel => document.querySelector(sel);
-const currencyFrom = $('#currencyFrom');
-const currencyTo = $('#currencyTo');
-const btnRefresh = $('#btnRefresh');
-const autoRefresh = $('#autoRefresh');
-const rateTime = $('#rateTime');
-const taxYearSelect = $('#taxYear');
-const btnCalc = $('#btnCalc');
-const btnClear = $('#btnClear');
-
-const inputs = {
-  wages: $('#wages'),
-  interest: $('#interest'),
-  dividends: $('#dividends'),
-  stgains: $('#stgains'),
-  ltgains: $('#ltgains'),
-  business: $('#business'),
-  prepayments: $('#prepayments'),
-  charity: $('#charity'),
-  mortgage: $('#mortgage'),
-  ira: $('#ira'),
-  otherDed: $('#otherDed'),
-  fileStatus: $('#fileStatus'),
-  age: $('#age'),
-  dependYoung: $('#dependYoung'),
-  dependOther: $('#dependOther'),
-  taxYear: $('#taxYear')
-};
-
-const outputs = {
-  estimatedAmount: $('#estimatedAmount'),
-  displayStatus: $('#displayStatus'),
-  displayYear: $('#displayYear'),
-  out_totalIncome: $('#out_totalIncome'),
-  out_wages: $('#out_wages'),
-  out_interest: $('#out_interest'),
-  out_gains: $('#out_gains'),
-  out_business: $('#out_business'),
-  out_deductions: $('#out_deductions'),
-  out_taxable: $('#out_taxable'),
-  out_taxes: $('#out_taxes'),
-  out_credits: $('#out_credits'),
-  out_totalTax: $('#out_totalTax'),
-  out_withheld: $('#out_withheld'),
-  out_refund: $('#out_refund'),
-  rateNote: $('#rateNote')
-};
-
-/* rates cache */
-let rates = { base: 'USD', date: null, rates: {} };
-let autoTimer = null;
-
-/* Fill tax year select (auto update) */
-(function populateYears(){
+(function setTaxYearOptions(){
   const now = new Date();
-  const currentYear = now.getFullYear();
-  // If you file this year for prior tax year, allow range: (currentYear-1) and current etc.
-  const years = [currentYear-1, currentYear];
-  taxYearSelect.innerHTML = years.map(y => `<option value="${y}">${y} (return filed in ${y+1})</option>`).join('');
-  // default to previous tax year (commonly currentYear-1)
-  taxYearSelect.value = currentYear-1;
-  outputs.displayYear.textContent = taxYearSelect.value;
+  const thisYear = now.getFullYear();
+  for(let y=thisYear; y<=thisYear+1; y++){
+    const opt = document.createElement('option'); opt.value = y; opt.textContent = y; $('taxYearSelect').appendChild(opt);
+  }
+  $('taxYearSelect').value = thisYear;
+  $('resYear').textContent = $('taxYearSelect').value;
 })();
+$('taxYearSelect').addEventListener('change', ()=> $('resYear').textContent = $('taxYearSelect').value);
 
-/* -------------------------
-   Fetch live rates (Frankfurter)
-   - Example: https://api.frankfurter.app/latest?from=USD
-   ------------------------- */
-async function fetchRates(base='USD'){
-  try{
-    const url = `https://api.frankfurter.app/latest?from=${encodeURIComponent(base)}`;
-    const resp = await fetch(url, { cache: "no-store" });
-    if(!resp.ok) throw new Error('Rate fetch failed');
-    const data = await resp.json();
-    // data: {amount:1, base:'USD', date:'2025-..', rates:{EUR:0.9,...}}
-    rates = { base: data.base || base, date: data.date || new Date().toISOString().slice(0,10), rates: data.rates || {} };
-    rateTime.textContent = `${rates.date} (base ${rates.base})`;
-    outputs.rateNote.textContent = `Rates updated ${rates.date}; source: Frankfurter API (no key).`;
-    return rates;
-  }catch(err){
-    rateTime.textContent = 'Failed to fetch rates';
-    outputs.rateNote.textContent = 'Rate fetch failed — using last-known or 1:1 fallback.';
-    console.warn('fetchRates error', err);
-    return rates;
-  }
+/* currency symbol map */
+function symbolFor(curr){
+  if(curr==='USD') return '$';
+  if(curr==='EUR') return '€';
+  if(curr==='INR') return '₹';
+  return '';
 }
 
-/* Convert amount from A -> B using rates object
-   frankfurter returns rates relative to base (e.g. rates[EUR] = 0.91 when base=USD)
-*/
-function convert(amount, a='USD', b='USD'){
-  if(a === b) return Number(amount || 0);
-  // ensure we have rates with base = rates.base
-  // formula: amount_in_b = amount * (rate_b_base / rate_a_base)
-  // If a === rates.base: amount * rate_b
-  const r = rates.rates || {};
-  const base = rates.base || 'USD';
-  // handle known simple cases
-  if(a === base){
-    const rb = r[b];
-    if(rb) return Number(amount) * rb;
-  }
-  if(b === base){
-    const ra = r[a];
-    if(ra) return Number(amount) / ra;
-  }
-  // general: convert a->base, then base->b
-  const ra = (r[a] ? r[a] : (a === base ? 1 : null));
-  const rb = (r[b] ? r[b] : (b === base ? 1 : null));
-  if(ra === null || rb === null){
-    // fallback: if missing rates for requested currency, try fetching with different base
-    // fallback to 1:1 to avoid crash
-    return Number(amount || 0);
-  }
-  const inBase = Number(amount || 0) / ra;
-  return inBase * rb;
+/* formatters */
+function fmtCurrency(n){
+  const sym = symbolFor(currencySelector.value);
+  const val = Number(n) || 0;
+  return sym + val.toLocaleString();
 }
+function fmt(n){ return (Number(n)||0).toLocaleString(); }
 
-/* Re-run auto-refresh */
-function scheduleAutoRefresh(){
-  if(autoTimer) { clearInterval(autoTimer); autoTimer=null; }
-  if(autoRefresh.checked){
-    // refresh every 30 minutes (1800000 ms). For demo keep 30m; here set 30m.
-    autoTimer = setInterval(()=>fetchRates(rates.base), 30 * 60 * 1000);
-  }
-}
-
-/* UI handlers */
-btnRefresh.addEventListener('click', ()=>fetchRates(rates.base));
-currencyFrom.addEventListener('change', ()=>{/* no-op for now */});
-currencyTo.addEventListener('change', ()=>{/* no-op for now */});
-autoRefresh.addEventListener('change', scheduleAutoRefresh);
-
-taxYearSelect.addEventListener('change', ()=>{
-  outputs.displayYear.textContent = taxYearSelect.value;
-});
-
-/* clear */
-btnClear.addEventListener('click', ()=>{
-  Object.values(inputs).forEach(i => {
-    if(i.tagName === 'SELECT') {
-      // reset selects to defaults
-      if(i.id === 'fileStatus') i.value='single';
-      if(i.id === 'taxYear') { /* keep selected */ }
-    } else {
-      if(i.type === 'number') i.value = 0;
-    }
-  });
-  inputs.wages.value = 0;
-  inputs.prepayments.value = 0;
-  // reset outputs
-  Object.values(outputs).forEach(o => { if(o) o.textContent = '—' });
-  outputs.displayYear.textContent = taxYearSelect.value;
-  outputs.displayStatus.textContent = '';
-});
-
-/* -------------------------
-   Basic tax calculation logic (example)
-   - This is a simplified placeholder; integrate your own tax logic
-   - We'll: convert user inputs from input-currency to a base currency (USD), compute totals,
-     apply a very simple progressive tax (demo), apply deductions, credits, and produce an estimated refund.
-   ------------------------- */
-
-function computeTaxesInBaseCurrency(values /* all numbers already in BASE currency */) {
-  // values: {wages, interest, dividends, stgains, ltgains, business, deductionsTotal, prepayments, filing}
-  // For demo purposes, we apply a simplified progressive tax table (federal only).
-  // NOTE: Replace with your authoritative tax rules as needed.
-  const filing = values.filing;
-  const taxable = Math.max(0, values.totalIncome - values.deductionsTotal);
-
-  // Example progressive brackets (very simplified / illustrative ONLY)
-  // brackets = [ [threshold, rate], ... ] threshold = lower bound
-  // Use single filer for demo
-  const brackets_single = [
-    [0, 0.10],
-    [11000, 0.12],
-    [44726, 0.22],
-    [95376, 0.24],
-    [182101, 0.32],
-    [231251, 0.35],
-    [578126, 0.37]
-  ];
-  const brackets = (filing === 'single') ? brackets_single : brackets_single; // placeholder
-
-  // compute tax
-  let tax = 0;
-  let remaining = taxable;
-  for(let i=brackets.length-1;i>=0;i--){
-    const [th, rate] = brackets[i];
-    if(taxable > th){
-      const amountAtThisRate = taxable - th;
-      tax += amountAtThisRate * rate;
-      taxable = th;
-    }
-  }
-
-  // For demo: credits fixed 0 (user could add child credit logic etc.)
-  const credits = 0;
-
-  const totalTaxWithCredits = tax - credits;
-  const refund = values.prepayments - totalTaxWithCredits;
-
-  return {
-    taxableIncome: remaining >= 0 ? remaining : 0,
-    regularTax: Math.max(0, tax),
-    credits,
-    totalTaxWithCredits,
-    refund
+/* simplified federal tax (same as previous) */
+function computeFederalTax(taxable, filingStatus){
+  taxable = Math.max(0, taxable || 0);
+  const brackets = {
+    single: [
+      {rate:0.10, upto:11000},
+      {rate:0.12, upto:44725},
+      {rate:0.22, upto:95375},
+      {rate:0.24, upto:182100},
+      {rate:0.32, upto:231250},
+      {rate:0.35, upto:578125},
+      {rate:0.37, upto:Infinity}
+    ],
+    married_joint: [
+      {rate:0.10, upto:22000},
+      {rate:0.12, upto:89450},
+      {rate:0.22, upto:190750},
+      {rate:0.24, upto:364200},
+      {rate:0.32, upto:462500},
+      {rate:0.35, upto:693750},
+      {rate:0.37, upto:Infinity}
+    ],
+    head: [
+      {rate:0.10, upto:15600},
+      {rate:0.12, upto:59750},
+      {rate:0.22, upto:95350},
+      {rate:0.24, upto:182100},
+      {rate:0.32, upto:231250},
+      {rate:0.35, upto:578100},
+      {rate:0.37, upto:Infinity}
+    ],
+    married_separate: [
+      {rate:0.10, upto:11000},
+      {rate:0.12, upto:44725},
+      {rate:0.22, upto:95375},
+      {rate:0.24, upto:182100},
+      {rate:0.32, upto:231250},
+      {rate:0.35, upto:346875},
+      {rate:0.37, upto:Infinity}
+    ],
+    widow: [] // will be handled
   };
+  const fs = (filingStatus === 'widow') ? 'married_joint' : (filingStatus === 'head' ? 'head' : filingStatus);
+  const table = brackets[fs] || brackets.single;
+  let remaining = taxable, tax=0, prev=0;
+  for(let i=0;i<table.length;i++){
+    const b = table[i];
+    const upto = b.upto;
+    const chunk = Math.max(0, Math.min(remaining, upto - prev));
+    if(chunk>0){ tax += chunk * b.rate; remaining -= chunk;}
+    prev = upto;
+    if(remaining<=0) break;
+  }
+  return Math.round(tax);
 }
 
-/* Helper: format money in chosen currencyTo */
-function formatMoney(amount, currency){
-  const opts = { style:'currency', currency, maximumFractionDigits:2 };
-  try {
-    return new Intl.NumberFormat(undefined, opts).format(Number(amount || 0));
-  } catch(e){
-    // fallback
-    return (Number(amount||0)).toFixed(2) + ' ' + currency;
-  }
+/* collect and compute and update UI */
+function calculateAll(){
+  const wages = Number($('wages').value)||0;
+  const interest = Number($('interest').value)||0;
+  const dividends = Number($('dividends').value)||0;
+  const qualifiedDiv = Number($('qualifiedDiv').value)||0;
+  const stcg = Number($('stcg').value)||0;
+  const ltcg = Number($('ltcg').value)||0;
+  const selfBiz = Number($('selfBiz').value)||0;
+  const passive = Number($('passive').value)||0;
+  const social = Number($('social').value)||0;
+  const otherIncome = Number($('otherIncome').value)||0;
+
+  const totalIncome = wages + interest + dividends + qualifiedDiv + stcg + ltcg + selfBiz + passive + social + otherIncome;
+
+  const mortgage = Number($('mortgage').value)||0;
+  const realEstate = Number($('realEstate').value)||0;
+  const charity = Number($('charity').value)||0;
+  const studentLoan = Number($('studentLoan').value)||0;
+  const ira = Number($('ira').value)||0;
+  const otherDed = Number($('otherDed').value)||0;
+  const childCare = Number($('childCare').value)||0;
+  const college1 = Number($('college1').value)||0;
+
+  const ctc = Number($('ctc').value)||0;
+  const otherCredits = Number($('otherCredits').value)||0;
+
+  const fedWithheld = Number($('fedWithheld').value)||0;
+  const prepayments = Number($('prepayments').value)||0;
+
+  const totalDeductions = mortgage + realEstate + charity + studentLoan + ira + otherDed + childCare + college1;
+  const taxableIncome = Math.max(0, Math.round(totalIncome - totalDeductions));
+  const regularTax = computeFederalTax(taxableIncome, $('filing').value);
+  const allCredits = ctc + otherCredits;
+  const taxWithCredits = Math.round(regularTax - allCredits);
+  const prepayTotal = fedWithheld + prepayments;
+  const estimatedRefund = Math.round(prepayTotal - taxWithCredits);
+
+  // fill UI (format with selected currency)
+  $('totalIncome').textContent = fmtCurrency(totalIncome);
+  $('rWages').textContent = fmtCurrency(wages);
+  $('rInterest').textContent = fmtCurrency(interest + dividends + qualifiedDiv);
+  $('rCG').textContent = fmtCurrency(stcg + ltcg);
+  $('rOther').textContent = fmtCurrency(selfBiz + passive + otherIncome + social);
+  $('totalDed').textContent = fmtCurrency(totalDeductions);
+  $('taxable').textContent = fmtCurrency(taxableIncome);
+  $('regularTax').textContent = fmtCurrency(regularTax);
+  $('allCredits').textContent =  fmtCurrency(allCredits);
+  $('taxWithCredits').textContent = fmtCurrency(taxWithCredits);
+  $('prepayTotal').textContent = fmtCurrency(prepayTotal);
+  $('finalRefund').textContent = fmtCurrency(estimatedRefund);
+  $('estAmount').textContent = fmtCurrency(estimatedRefund);
+
+  // filing label
+  const filingMap = {single:'Single', married_joint:'Married filing jointly', married_separate:'Married filing separately', head:'Head of household', widow:'Qualified widow(er)'};
+  $('resFiling').textContent = 'Filing: ' + (filingMap[$('filing').value] || 'Single');
+
+  return {estimatedRefund};
 }
 
-/* Main calculate handler */
-async function calculate(){
-  // ensure rates loaded
-  await fetchRates(rates.base);
+/* currency conversion logic
+   rates are stored as value = 1 USD = rateX (editable)
+   current currency is currencySelector.value (like 'USD')
+   Convert button: converts all numeric inputs from current currency into selected target currency
+   Calculation formatting uses selected currency only (does not convert values unless user pressed Convert)
+*/
+function getRates(){
+  // ensure positive numbers
+  const rUSD = Math.max(0.000001, Number(rateUSD.value) || 1);
+  const rEUR = Math.max(0.000001, Number(rateEUR.value) || 0.92);
+  const rINR = Math.max(0.000001, Number(rateINR.value) || 83.5);
+  return {USD:rUSD, EUR:rEUR, INR:rINR};
+}
 
-  const from = currencyFrom.value;
-  const to = currencyTo.value;
-  // Choose a stable BASE currency for internal logic (we'll use USD)
-  const BASE = 'USD';
-  // If our rates base is not BASE, we can fetch with BASE as base to ensure direct conversion, but frankfurter returns many rates against base.
-  if(rates.base !== BASE){
-    // Try re-fetch with base=BASE to reduce rounding steps
-    await fetchRates(BASE);
-  }
-
-  // Gather input amounts and convert them from input currency -> BASE
-  function inp(id){
-    const v = Number(document.getElementById(id).value || 0);
-    return convert(v, from, BASE);
-  }
-
-  const wages_base = inp('wages');
-  const interest_base = inp('interest');
-  const dividends_base = inp('dividends');
-  const stgains_base = inp('stgains');
-  const ltgains_base = inp('ltgains');
-  const business_base = inp('business');
-
-  const prepayments_base = inp('prepayments');
-  const charity_base = inp('charity');
-  const mortgage_base = inp('mortgage');
-  const ira_base = inp('ira');
-  const otherDed_base = inp('otherDed');
-
-  // Basic totals
-  const totalIncome_base = wages_base + interest_base + dividends_base + stgains_base + ltgains_base + business_base;
-  // Deductions: for demo we combine entered deductions + standard deduction placeholder
-  const filingStatus = inputs.fileStatus.value;
-  const standardDeduction = (filingStatus === 'single' ? 13500 : 27000); // demo placeholders
-  const deductionsTotal_base = standardDeduction + charity_base + mortgage_base + ira_base + otherDed_base;
-
-  // Compute tax (demo function)
-  const taxResult = computeTaxesInBaseCurrency({
-    wages: wages_base,
-    interest: interest_base,
-    dividends: dividends_base,
-    stgains: stgains_base,
-    ltgains: ltgains_base,
-    business: business_base,
-    deductionsTotal: deductionsTotal_base,
-    prepayments: prepayments_base,
-    filing: filingStatus
+function convertValuesTo(target){
+  const rates = getRates();
+  const current = currencySelector.value;
+  if(current === target) { alert('Already in ' + target); return; }
+  const fromRate = rates[current];
+  const toRate = rates[target];
+  if(!fromRate || !toRate){ alert('Invalid rates'); return; }
+  const factor = toRate / fromRate; // multiply current values by this factor to get target currency
+  // apply to all numeric inputs
+  numericInputs().forEach(input=>{
+    const v = Number(input.value) || 0;
+    // scale and round to 2 decimals for nicer behaviour
+    const nv = Math.round((v * factor) * 100) / 100;
+    input.value = nv;
   });
-
-  // Convert outputs to display currency (to)
-  const conv = amt => convert(amt, BASE, to);
-
-  // Populate results
-  outputs.out_totalIncome.textContent = formatMoney(conv(totalIncome_base), to);
-  outputs.out_wages.textContent = formatMoney(conv(wages_base), to);
-  outputs.out_interest.textContent = formatMoney(conv(interest_base + dividends_base), to);
-  outputs.out_gains.textContent = formatMoney(conv(stgains_base + ltgains_base), to);
-  outputs.out_business.textContent = formatMoney(conv(business_base), to);
-  outputs.out_deductions.textContent = formatMoney(conv(deductionsTotal_base), to);
-  outputs.out_taxable.textContent = formatMoney(conv(taxResult.taxableIncome), to);
-  outputs.out_taxes.textContent = formatMoney(conv(taxResult.regularTax), to);
-  outputs.out_credits.textContent = formatMoney(conv(taxResult.credits), to);
-  outputs.out_totalTax.textContent = formatMoney(conv(taxResult.totalTaxWithCredits), to);
-  outputs.out_withheld.textContent = formatMoney(conv(prepayments_base), to);
-  outputs.out_refund.textContent = formatMoney(conv(taxResult.refund), to);
-
-  outputs.estimatedAmount.textContent = formatMoney(conv(taxResult.refund), to);
-  outputs.displayStatus.textContent = inputs.fileStatus.options[inputs.fileStatus.selectedIndex].text;
-  outputs.displayYear.textContent = taxYearSelect.value;
+  // update currency selector to target
+  currencySelector.value = target;
+  // refresh results labels (they will be formatted using new currency symbol)
+  calculateAll();
 }
 
-/* init: load rates on startup and schedule auto-refresh */
-(async function init(){
-  // initial fetch using USD base
-  await fetchRates('USD');
-  scheduleAutoRefresh();
+/* hookup the convert button */
+$('convertBtn').addEventListener('click', ()=>{
+  // Show a small selector to pick target currency (reuse currency selector)
+  const current = currencySelector.value;
+  const target = prompt(`Convert all numeric inputs from ${current} to which currency? Enter: USD, EUR or INR`, current);
+  if(!target) return;
+  const t = target.trim().toUpperCase();
+  if(!['USD','EUR','INR'].includes(t)) { alert('Only USD, EUR, INR allowed'); return; }
+  convertValuesTo(t);
+});
 
-  // attach calculate
-  btnCalc.addEventListener('click', async (e) => {
-    e.preventDefault();
-    await calculate();
-  });
+/* currency selector changes just change formatting & symbol (does not convert existing numbers) */
+currencySelector.addEventListener('change', ()=> calculateAll());
 
-  // initial calculate (nice-to-have)
-  await calculate();
-})();
+/* demo preset from earlier example */
+const demoValues = {
+  wages: 8000,
+  interest: 0,
+  dividends: 0,
+  qualifiedDiv: 0,
+  stcg: 0,
+  ltcg: 0,
+  selfBiz: 0,
+  passive: 0,
+  social: 0,
+  otherIncome: 0,
+  mortgage: 0,
+  realEstate: 0,
+  charity: 0,
+  studentLoan: 0,
+  ira: 0,
+  otherDed: 15750,
+  childCare: 0,
+  college1: 0,
+  ctc: 2720,
+  otherCredits: 0,
+  fedWithheld: 6000,
+  stateWithheld: 0,
+  prepayments: 0,
+  otherWith: 0,
+  filing: 'single',
+  age: 30,
+  taxYear: Number($('taxYearSelect').value)
+};
+function fillForm(v){
+  $('wages').value = v.wages || 0;
+  $('interest').value = v.interest || 0;
+  $('dividends').value = v.dividends || 0;
+  $('qualifiedDiv').value = v.qualifiedDiv || 0;
+  $('stcg').value = v.stcg || 0;
+  $('ltcg').value = v.ltcg || 0;
+  $('selfBiz').value = v.selfBiz || 0;
+  $('passive').value = v.passive || 0;
+  $('social').value = v.social || 0;
+  $('otherIncome').value = v.otherIncome || 0;
+  $('mortgage').value = v.mortgage || 0;
+  $('realEstate').value = v.realEstate || 0;
+  $('charity').value = v.charity || 0;
+  $('studentLoan').value = v.studentLoan || 0;
+  $('ira').value = v.ira || 0;
+  $('otherDed').value = v.otherDed || 0;
+  $('childCare').value = v.childCare || 0;
+  $('college1').value = v.college1 || 0;
+  $('ctc').value = v.ctc || 0;
+  $('otherCredits').value = v.otherCredits || 0;
+  $('fedWithheld').value = v.fedWithheld || 0;
+  $('stateWithheld').value = v.stateWithheld || 0;
+  $('prepayments').value = v.prepayments || 0;
+  $('otherWith').value = v.otherWith || 0;
+  $('filing').value = v.filing || 'single';
+  $('age').value = v.age || 30;
+  $('taxYearSelect').value = v.taxYear || $('taxYearSelect').value;
+  $('resYear').textContent = $('taxYearSelect').value;
+}
 
+/* button handlers */
+$('calculateBtn').addEventListener('click', ()=> calculateAll());
+$('exampleBtn').addEventListener('click', ()=>{
+  fillForm(demoValues);
+  calculateAll();
+});
+$('loadDemo').addEventListener('click', ()=>{
+  fillForm(demoValues);
+  calculateAll();
+});
+$('clearBtn').addEventListener('click', ()=>{
+  document.getElementById('taxForm').reset();
+  // reset rates & currency to defaults (optional)
+  rateUSD.value = 1; rateEUR.value = 0.92; rateINR.value = 83.5;
+  currencySelector.value = 'USD';
+  calculateAll();
+});
+
+/* initial render */
+calculateAll();
 </script>
 </body>
 </html>
