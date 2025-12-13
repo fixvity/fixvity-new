@@ -1,155 +1,145 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
+<meta charset="UTF-8">
+<title>Professional Income Tax Calculator</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Professional Income Tax Calculator 2024–2028</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-
 <style>
-:root{
-  --teal:#0d9488;
-  --teal-dark:#0f766e;
-  --bg:#f3faf9;
-  --card:#ffffff;
-  --border:#e2e8f0;
-  --text:#0f172a;
-  --muted:#64748b;
-  --danger:#dc2626;
-  --success:#059669;
-  --radius:14px;
-  font-family:Inter, system-ui;
+:root {
+  --blue-dark: #004c99;
+  --blue-light: #e8f4ff;
+  --teal: #009688;
+  --success: #0a8f40;
+  --danger: #d32f2f;
+  --card-bg: #ffffff;
+  --border: #d0d0d0;
+  --radius: 12px;
+  --pad: 14px;
 }
 
-body{
-  background:var(--bg);
-  margin:0;
-  padding:0;
-  -webkit-font-smoothing:antialiased;
-  color:var(--text);
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background: #f4f7fa;
+  padding-bottom: 60px;
 }
 
-.container{
-  max-width:1050px;
-  margin:20px auto;
-  padding:12px;
+.container {
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
 }
 
-.card{
-  background:var(--card);
-  border-radius:var(--radius);
-  padding:16px;
-  box-shadow:0 4px 20px rgba(0,0,0,0.06);
-  margin-bottom:16px;
-  border:1px solid var(--border);
+h1 {
+  font-size: 26px;
+  text-align: center;
+  font-weight: 700;
+  margin-bottom: 20px;
 }
 
-.cardTitle{
-  font-size:22px;
-  font-weight:800;
-  color:var(--teal-dark);
-  margin-bottom:14px;
-  padding:10px 14px;
-  background:#ccfbf1;
-  border-radius:var(--radius);
+/* SECTION HEADER */
+.section-header {
+  background: var(--blue-dark);
+  color: white;
+  padding: 12px 15px;
+  border-radius: var(--radius);
+  margin-top: 25px;
+  font-weight: bold;
 }
 
-.row{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:16px;
-}
-@media(max-width:700px){
-  .row{ grid-template-columns:1fr; }
-}
-
-label{
-  font-size:14px;
-  font-weight:600;
-  margin-bottom:4px;
-  display:block;
+/* CARD */
+.card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: var(--pad);
+  margin-bottom: 20px;
+  border: 1px solid var(--border);
 }
 
-input, select{
-  width:100%;
-  padding:12px;
-  border-radius:var(--radius);
-  border:1px solid var(--border);
-  font-size:15px;
-  background:white;
+/* INPUT ELEMENTS */
+input, select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 6px;
+  margin-bottom: 16px;
+  border-radius: var(--radius);
+  border: 1px solid #ccc;
+  font-size: 15px;
 }
 
-.section{
-  border:1px solid var(--border);
-  border-radius:var(--radius);
-  padding:12px;
-  margin-bottom:16px;
+/* GRID */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
 }
 
-.section h3{
-  margin:0 0 10px 0;
-  font-size:18px;
-  color:var(--teal-dark);
-  font-weight:800;
+.grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 15px;
 }
 
-.btnPrimary{
-  background:var(--teal);
-  color:white;
-  padding:12px 18px;
-  font-size:16px;
-  border:0;
-  border-radius:var(--radius);
-  cursor:pointer;
-  font-weight:700;
+@media(max-width:600px) {
+  .grid-2, .grid-3 {
+    grid-template-columns: 1fr;
+  }
 }
 
-.btnSecondary{
-  background:white;
-  border:1px solid var(--border);
-  padding:12px 18px;
-  font-size:16px;
-  border-radius:var(--radius);
-  cursor:pointer;
-  font-weight:700;
+/* BUTTONS */
+button {
+  padding: 12px 22px;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 16px;
+  cursor: pointer;
 }
 
-.actions{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  margin-top:10px;
+#calcBtn {
+  background: var(--blue-dark);
+  color: white;
 }
 
-.resultBox{
-  padding:16px;
-  border-radius:var(--radius);
-  border:1px solid var(--border);
-  background:white;
+#clearBtn {
+  background: #888;
+  color: white;
 }
 
-.resultLabel{
-  font-size:16px;
-  font-weight:700;
-  color:var(--muted);
+#pngBtn {
+  background: var(--teal);
+  color: white;
 }
 
-.resultValue{
-  font-size:26px;
-  font-weight:800;
-  margin-top:4px;
-  color:var(--teal-dark);
+/* RESULTS */
+#resultBox {
+  margin-top: 25px;
 }
 
-.refundPositive{
-  color:var(--success)!important;
+.result-amount {
+  font-size: 32px;
+  font-weight: bold;
+  color: var(--success);
+  text-align: center;
+  margin-bottom: 15px;
 }
 
-.refundNegative{
-  color:var(--danger)!important;
+.result-table {
+  background: white;
+  border-radius: var(--radius);
+  padding: 18px;
+  border: 1px solid #cfcfcf;
+}
+
+.result-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #e6e6e6;
+}
+
+.result-title {
+  font-weight: bold;
 }
 </style>
 </head>
@@ -157,508 +147,348 @@ input, select{
 <body>
 <div class="container">
 
-<div class="card">
-  <h1 style="font-size:30px;font-weight:900;color:var(--teal-dark);margin:0;">
-    Professional Income Tax Calculator
-  </h1>
-</div>
+<h1>Professional Income Tax Calculator</h1>
 
-<!-- Currency Section -->
-<div class="card">
-  <div class="cardTitle">Currency</div>
-  <div class="row">
-    <div>
-      <label>Select Currency</label>
-      <select id="currency">
-        <option value="USD" selected>USD ($)</option>
-        <option value="EUR">EUR (€)</option>
-        <option value="INR">INR (₹)</option>
-      </select>
-    </div>
-    <div>
-      <label>Tax Year</label>
-      <select id="taxYear">
-        <option>2024</option>
-        <option>2025</option>
-        <option>2026</option>
-        <option>2027</option>
-        <option>2028</option>
-      </select>
-    </div>
-  </div>
-</div>
-<!-- Filing Status -->
-<div class="card">
-  <div class="cardTitle">Filing Status & Personal Info</div>
-  <div class="row">
-    <div>
-      <label>Filing Status</label>
-      <select id="filingStatus">
-        <option value="single">Single</option>
-        <option value="married_joint">Married Filing Jointly</option>
-        <option value="married_separate">Married Filing Separately</option>
-        <option value="head">Head of Household</option>
-        <option value="widow">Qualified Widow(er)</option>
-      </select>
-    </div>
-    <div>
-      <label>Age</label>
-      <input id="age" type="number" placeholder="28" value="28">
-    </div>
-  </div>
-</div>
-
-<!-- Income Section -->
-<div class="card">
-  <div class="cardTitle">Income</div>
-
-  <div class="row">
-    <div>
-      <label>Wages</label>
-      <input id="wages" type="number" value="6000">
-    </div>
-
-    <div>
-      <label>Tips</label>
-      <input id="tips" type="number" value="0">
-    </div>
-  </div>
-
-  <div class="row">
-    <div>
-      <label>Overtime</label>
-      <input id="overtime" type="number" value="0">
-    </div>
-
-    <div>
-      <label>Business Income</label>
-      <input id="biz" type="number" value="0">
-    </div>
-  </div>
-
-  <div class="row">
-    <div>
-      <label>Social Security Income</label>
-      <input id="ss" type="number" value="0">
-    </div>
-
-    <div>
-      <label>Interest Income</label>
-      <input id="interest" type="number" value="0">
-    </div>
-  </div>
-
-  <div class="row">
-    <div>
-      <label>Dividends</label>
-      <input id="dividends" type="number" value="0">
-    </div>
-
-    <div>
-      <label>Qualified Dividends</label>
-      <input id="qdiv" type="number" value="0">
-    </div>
-  </div>
-
-  <div class="row">
-    <div>
-      <label>Passive Income</label>
-      <input id="passive" type="number" value="0">
-   div>
-
-    <div>
-      <label>Short-Term Capital Gains</label>
-      <input id="stcg" type="number" value="0">
-    </div>
-  </div>
-
-  <div class="row">
-    <div>
-      <label>Long-Term Capital Gains</label>
-      <input id="ltcg" type="number" value="0">
-    </div>
-
-    <div>
-      <label>Other Income</label>
-      <input id="otherIncome" type="number" value="0">
-    </div>
-  </div>
-</div>
-
-<!-- Deductions Section -->
-<div class="card">
-  <div class="cardTitle">Deductions</div>
-
-  <label>Use Standard Deduction?</label>
-  <select id="useStd">
-    <option value="yes" selected>Yes</option>
-    <option value="no">No (Itemized)</option>
-  </select>
-
-  <div id="itemizedBox" style="display:none;margin-top:12px;">
-    <div class="row">
-      <div>
-        <label>Mortgage Interest</label>
-        <input id="mortgage" type="number" value="0">
-      </div>
-
-      <div>
-        <label>Real Estate Taxes</label>
-        <input id="realestate" type="number" value="0">
-      </div>
-    </div>
-
-    <div class="row">
-      <div>
-        <label>Charitable Contributions</label>
-        <input id="charity" type="number" value="0">
-      </div>
-
-      <div>
-        <label>Student Loan Interest</label>
-        <input id="studentLoan" type="number" value="0">
-      </div>
-    </div>
-
-    <div class="row">
-      <div>
-        <label>Car Loan Interest</label>
-        <input id="carInterest" type="number" value="0">
-      </div>
-
-      <div>
-        <label>IRA Contributions</label>
-        <input id="ira" type="number" value="0">
-      </div>
-    </div>
-
-    <div>
-      <label>Other Deductions</label>
-      <input id="otherDed" type="number" value="0">
-    </div>
-  </div>
-</div>
-
-<!-- Credits Section -->
-<div class="card">
-  <div class="cardTitle">Credits</div>
-  <div class="row">
-    <div>
-      <label>Child Care Credit</label>
-      <input id="childCare" type="number" value="0">
-    </div>
-
-    <div>
-      <label>Education Credit</label>
-      <input id="eduCredit" type="number" value="0">
-    </div>
-  </div>
-
-  <div class="row">
-    <div>
-      <label>Other Credits</label>
-      <input id="otherCredits" type="number" value="0">
-    </div>
-    <div></div>
-  </div>
-</div>
-<!-- Withholding & State Tax -->
-<div class="card">
-  <div class="cardTitle">Withholding & State Taxes</div>
-
-  <div class="row">
-    <div>
-      <label>Federal Tax Withheld</label>
-      <input id="withheld" type="number" value="4000">
-    </div>
-
-    <div>
-      <label>Prepayments</label>
-      <input id="prepayments" type="number" value="0">
-    </div>
-  </div>
-
-  <div class="row">
-    <div>
-      <label>State Tax Withheld</label>
-      <input id="stateWithheld" type="number" value="0">
-    </div>
-
-    <div>
-      <label>Local Tax Withheld</label>
-      <input id="localWithheld" type="number" value="0">
-    </div>
+<!-------------------- CURRENCY --------------------->
+<div class="section-header">Currency</div>
+<div class="card grid-2">
+  <div>
+    <label>Select Currency</label>
+    <select id="currency">
+      <option value="USD">$ USD</option>
+      <option value="EUR">€ EUR</option>
+      <option value="INR">₹ INR</option>
+    </select>
   </div>
 
   <div>
-    <label>State Tax Rate (%) — Approx</label>
+    <label>Tax Year</label>
+    <select id="taxYear">
+      <option value="2024">2024</option>
+      <option value="2025">2025</option>
+      <option value="2026">2026</option>
+      <option value="2027">2027</option>
+      <option value="2028">2028</option>
+    </select>
+  </div>
+</div>
+
+<!---------------- FILE STATUS ---------------->
+<div class="section-header">Filing Status & Personal Info</div>
+<div class="card grid-2">
+  <div>
+    <label>Filing Status</label>
+    <select id="status">
+      <option value="single">Single</option>
+      <option value="married_joint">Married Filing Jointly</option>
+      <option value="married_separate">Married Filing Separately</option>
+      <option value="head">Head of Household</option>
+      <option value="widow">Qualified Widow(er)</option>
+    </select>
+  </div>
+
+  <div>
+    <label>Age</label>
+    <input type="number" id="age" value="28">
+  </div>
+</div>
+
+<!------------------ INCOME ------------------>
+<div class="section-header">Income</div>
+<div class="card grid-3">
+
+  <div><label>Wages</label>
+    <input id="wages" type="number" value="6000">
+  </div>
+
+  <div><label>Tips</label>
+    <input id="tips" type="number" value="0">
+  </div>
+
+  <div><label>Business Income</label>
+    <input id="biz" type="number" value="0">
+  </div>
+
+  <div><label>Social Security Income</label>
+    <input id="ss" type="number" value="0">
+  </div>
+
+  <div><label>Interest Income</label>
+    <input id="interest" type="number" value="0">
+  </div>
+
+  <div><label>Dividends</label>
+    <input id="div" type="number" value="0">
+  </div>
+
+  <div><label>Qualified Dividends</label>
+    <input id="qdiv" type="number" value="0">
+  </div>
+
+  <div><label>Long-Term Capital Gains</label>
+    <input id="ltcg" type="number" value="0">
+  </div>
+
+  <div><label>Short-Term Capital Gains</label>
+    <input id="stcg" type="number" value="0">
+  </div>
+
+  <div><label>Passive Income</label>
+    <input id="passive" type="number" value="0">
+  </div>
+
+  <div><label>Other Income</label>
+    <input id="otherIncome" type="number" value="0">
+  </div>
+
+</div>
+
+<!---------------- DEDUCTIONS ---------------->
+<div class="section-header">Deductions</div>
+<div class="card">
+
+  <label>Use Standard Deduction?</label>
+  <select id="useStd">
+    <option value="yes">Yes (Recommended)</option>
+    <option value="no">No (Itemized)</option>
+  </select>
+
+  <div id="itemizedSection" style="display:none;" class="grid-2">
+    <div>
+      <label>Mortgage Interest</label>
+      <input id="mortgage" type="number" value="0">
+    </div>
+
+    <div>
+      <label>Real Estate Tax</label>
+      <input id="realestate" type="number" value="0">
+    </div>
+
+    <div>
+      <label>Charitable Donations</label>
+      <input id="charity" type="number" value="0">
+    </div>
+
+    <div>
+      <label>Student Loan Interest</label>
+      <input id="studentLoan" type="number" value="0">
+    </div>
+
+    <div>
+      <label>IRA Contributions</label>
+      <input id="ira" type="number" value="0">
+    </div>
+
+    <div>
+      <label>Other Deductibles</label>
+      <input id="otherDed" type="number" value="0">
+    </div>
+  </div>
+
+</div>
+
+<!---------------- CREDITS ---------------->
+<div class="section-header">Credits</div>
+<div class="card grid-2">
+
+  <div>
+    <label>Child Tax Credit</label>
+    <input id="ctc" type="number" value="0">
+  </div>
+
+  <div>
+    <label>Education Credit</label>
+    <input id="eduCredit" type="number" value="0">
+  </div>
+
+  <div>
+    <label>Other Credits</label>
+    <input id="otherCredits" type="number" value="0">
+  </div>
+
+</div>
+
+<!---------------- WITHHOLDING ---------------->
+<div class="section-header">Withholding & Taxes</div>
+<div class="card grid-2">
+
+  <div>
+    <label>Federal Tax Withheld</label>
+    <input id="withheld" type="number" value="4000">
+  </div>
+
+  <div>
+    <label>Prepayments</label>
+    <input id="prepay" type="number" value="0">
+  </div>
+
+  <div>
+    <label>State Tax Withheld</label>
+    <input id="stateW" type="number" value="0">
+  </div>
+
+  <div>
+    <label>Local Tax Withheld</label>
+    <input id="localW" type="number" value="0">
+  </div>
+
+  <div>
+    <label>State Tax Rate (%)</label>
     <input id="stateRate" type="number" value="0">
   </div>
+
 </div>
 
-<!-- ACTION BUTTONS -->
-<div class="card">
-  <div class="actions">
-    <button class="btnPrimary" id="calcBtn">Calculate</button>
-    <button class="btnSecondary" id="clearBtn">Clear</button>
-    <button class="btnSecondary" id="pngBtn">Download PNG</button>
+<!---------------- BUTTONS ---------------->
+<div class="card" style="text-align:center;">
+  <button id="calcBtn">Calculate</button>
+  <button id="clearBtn">Clear</button>
+  <button id="pngBtn">Download PNG</button>
+</div>
+
+<!---------------- RESULTS ---------------->
+<div class="section-header">Results</div>
+<div id="resultBox" class="card">
+
+  <div id="refundAmount" class="result-amount">$0</div>
+
+  <div class="result-table">
+
+    <div class="result-row"><span class="result-title">Total Income</span>
+      <span id="out_income">$0</span></div>
+
+    <div class="result-row"><span class="result-title">Adjusted Gross Income (AGI)</span>
+      <span id="out_agi">$0</span></div>
+
+    <div class="result-row"><span class="result-title">Taxable Income</span>
+      <span id="out_taxable">$0</span></div>
+
+    <div class="result-row"><span class="result-title">Federal Income Tax</span>
+      <span id="out_fedtax">$0</span></div>
+
+    <div class="result-row"><span class="result-title">Credits Applied</span>
+      <span id="out_credits">$0</span></div>
+
+    <div class="result-row"><span class="result-title">State Tax</span>
+      <span id="out_stateTax">$0</span></div>
+
+    <div class="result-row"><span class="result-title">Total Prepayments</span>
+      <span id="out_prepay">$0</span></div>
+
+    <div class="result-row"><span class="result-title">Final Refund / Due</span>
+      <span id="out_final">$0</span></div>
   </div>
 </div>
 
-<!-- RESULTS SECTION -->
-<div class="card">
-  <div class="cardTitle">Results</div>
-
-  <div class="resultBox">
-    <div class="resultLabel">Total Income</div>
-    <div class="resultValue" id="out_totalIncome">$0</div>
-
-    <div class="resultLabel" style="margin-top:10px;">Taxable Income</div>
-    <div class="resultValue" id="out_taxable">$0</div>
-
-    <div class="resultLabel" style="margin-top:10px;">Federal Income Tax</div>
-    <div class="resultValue" id="out_regtax">$0</div>
-
-    <div class="resultLabel" style="margin-top:10px;">Credits Applied</div>
-    <div class="resultValue" id="out_credits">$0</div>
-
-    <div class="resultLabel" style="margin-top:10px;">Total Tax Liability</div>
-    <div class="resultValue" id="out_totalTax">$0</div>
-
-    <div class="resultLabel" style="margin-top:10px;">Prepayments</div>
-    <div class="resultValue" id="out_prepay">$0</div>
-
-    <div class="resultLabel" style="margin-top:10px;">Estimated Refund</div>
-    <div class="resultValue" id="estRefund">—</div>
-
-    <div class="resultLabel" style="margin-top:10px;">Estimated State Tax</div>
-    <div class="resultValue" id="out_stateTax">—</div>
-  </div>
-</div>
+</div><!-- end container -->
 
 <script>
-// ===============================
-// UTILITIES
-// ===============================
-
-const $ = id => document.getElementById(id);
-
-function fmt(n){
-  return Number(n).toLocaleString(undefined, {maximumFractionDigits:0});
-}
-function fmtCurrency(n, cur){
-  const map = {USD:'$', EUR:'€', INR:'₹'};
-  return map[cur] + fmt(n);
+/* ================== CALCULATION LOGIC ================== */
+function fmt(n, cur){
+  const s = cur === "USD" ? "$" : cur === "EUR" ? "€" : "₹";
+  return s + Number(n).toLocaleString();
 }
 
-// ===============================
-// IRS STANDARD DEDUCTION — 2024-2028
-// ===============================
-const STD = {
-  2024:{ single:14600, married_joint:29200, married_separate:14600, head:21900, widow:29200 },
-  2025:{ single:15000, married_joint:30000, married_separate:15000, head:22500, widow:30000 },
-  2026:{ single:15500, married_joint:31000, married_separate:15500, head:23200, widow:31000 },
-  2027:{ single:16000, married_joint:32000, married_separate:16000, head:24000, widow:32000 },
-  2028:{ single:16500, married_joint:33000, married_separate:16500, head:24800, widow:33000 }
-};
-
-// ===============================
-// FEDERAL TAX BRACKETS 2024–2028
-// ===============================
-const BRACKETS = {
-  2024:{
-    single:[
-      [11000,0.10],[44725,0.12],[95375,0.22],[182100,0.24],[231250,0.32],[578125,0.35],[Infinity,0.37]
-    ],
-    married_joint:[
-      [22000,0.10],[89450,0.12],[190750,0.22],[364200,0.24],[462500,0.32],[693750,0.35],[Infinity,0.37]
-    ],
-    married_separate:[
-      [11000,0.10],[44725,0.12],[95375,0.22],[182100,0.24],[231250,0.32],[578125,0.35],[Infinity,0.37]
-    ],
-    head:[
-      [15700,0.10],[59850,0.12],[95350,0.22],[182100,0.24],[231250,0.32],[578100,0.35],[Infinity,0.37]
-    ],
-    widow:[
-      [22000,0.10],[89450,0.12],[190750,0.22],[364200,0.24],[462500,0.32],[693750,0.35],[Infinity,0.37]
-    ]
-  },
-  // REPEAT SAME BRACKETS FOR 2025–2028 (IRS COLA ESTIMATED)
-  2025:this.2024,
-  2026:this.2024,
-  2027:this.2024,
-  2028:this.2024
-};
-
-// ===============================
-// TAX CALCULATION FUNCTION
-// ===============================
-function computeTax(income, year, status){
-  const rows = BRACKETS[year][status];
-  let tax = 0;
-  let prev = 0;
-
-  for(let [limit, rate] of rows){
-    if(income > limit){
-      tax += (limit - prev) * rate;
-      prev = limit;
-    } else {
-      tax += (income - prev) * rate;
-      break;
-    }
-  }
-
-  return Math.max(0, tax);
+function getStdDeduction(status, year){
+  const base = {
+    2024:{single:14500, married_joint:29000, married_separate:14500, head:21500, widow:29000},
+    2025:{single:15750, married_joint:31500, married_separate:15750, head:23500, widow:31500},
+    2026:{single:16000, married_joint:32000, married_separate:16000, head:24000, widow:32000},
+    2027:{single:16500, married_joint:33000, married_separate:16500, head:25000, widow:33000},
+    2028:{single:17000, married_joint:34000, married_separate:17000, head:26000, widow:34000}
+  };
+  return base[year][status];
 }
-  // ===============================
-// MAIN CALCULATE FUNCTION
-// ===============================
+
 function calculate(){
+  let cur = document.getElementById("currency").value;
 
-  const cur = $('currency').value;
-  const year = Number($('taxYear').value);
-  const status = $('filingStatus').value;
+  /* income values */
+  let wages = +wagesEl.value, tips = +tipsEl.value, biz = +bizEl.value, ss = +ssEl.value;
+  let interest = +intEl.value, div = +divEl.value, qdiv = +qdivEl.value;
+  let stcg = +stcgEl.value, ltcg = +ltcgEl.value, passive = +passiveEl.value;
+  let other = +otherIncEl.value;
 
-  // INCOME INPUTS
-  const v_wages = Number($('wages').value)||0;
-  const v_tips = Number($('tips').value)||0;
-  const v_ot = Number($('overtime').value)||0;
-  const v_biz = Number($('biz').value)||0;
-  const v_ss = Number($('ss').value)||0;
-  const v_int = Number($('interest').value)||0;
-  const v_div = Number($('dividends').value)||0;
-  const v_qdiv = Number($('qdiv').value)||0;
-  const v_passive = Number($('passive').value)||0;
-  const v_stcg = Number($('stcg').value)||0;
-  const v_ltcg = Number($('ltcg').value)||0;
-  const v_othInc = Number($('otherIncome').value)||0;
+  let totalIncome = wages + tips + biz + ss + interest + div + qdiv + stcg + ltcg + passive + other;
 
-  const totalIncome =
-    v_wages+v_tips+v_ot+v_biz+v_ss+
-    v_int+v_div+v_qdiv+v_passive+
-    v_stcg+v_ltcg+v_othInc;
+  /* deductions */
+  let useStd = document.getElementById("useStd").value;
+  let year = document.getElementById("taxYear").value;
+  let status = document.getElementById("status").value;
 
-  // DEDUCTIONS
-  const useStd = $('useStd').value === 'yes';
   let deduction = 0;
 
-  if(useStd){
-    deduction = STD[year][status];
+  if(useStd === "yes"){
+    deduction = getStdDeduction(status, year);
   } else {
-    const v_mort = Number($('mortgage').value)||0;
-    const v_real = Number($('realestate').value)||0;
-    const v_char = Number($('charity').value)||0;
-    const v_stud = Number($('studentLoan').value)||0;
-    const v_car = Number($('carInterest').value)||0;
-    const v_ira = Number($('ira').value)||0;
-    const v_otherD = Number($('otherDed').value)||0;
-
-    deduction = v_mort + v_real + v_char + v_stud + v_car + v_ira + v_otherD;
+    deduction =
+      (+mortgage.value) + (+realestate.value) + (+charity.value) +
+      (+studentLoan.value) + (+ira.value) + (+otherDed.value);
   }
 
-  const taxableIncome = Math.max(0, totalIncome - deduction);
+  let agi = totalIncome;
+  let taxable = Math.max(agi - deduction, 0);
 
-  // FEDERAL TAX
-  const fedTax = computeTax(taxableIncome, year, status);
+  /* VERY SIMPLE FEDERAL TAX RATE (demo only) */
+  let fed = Math.round(taxable * 0.10); // 10% bracket
 
-  // CREDITS
-  const v_childCare = Number($('childCare').value)||0;
-  const v_eduCredit = Number($('eduCredit').value)||0;
-  const v_otherCred = Number($('otherCredits').value)||0;
+  /* credits */
+  let credits = (+ctc.value) + (+eduCredit.value) + (+otherCredits.value);
+  let finalFed = Math.max(fed - credits, 0);
 
-  const totalCredits = v_childCare + v_eduCredit + v_otherCred;
+  /* state tax */
+  let stRate = +stateRate.value;
+  let stateTax = Math.round(wages * stRate/100);
 
-  // FINAL TAX LIABILITY
-  const taxAfterCredits = Math.max(0, fedTax - totalCredits);
+  /* prepayments */
+  let finalPre = (+withheld.value) + (+prepay.value) + (+stateW.value) + (+localW.value);
 
-  // PREPAYMENTS
-  const v_withheld = Number($('withheld').value)||0;
-  const v_prepay = Number($('prepayments').value)||0;
-  const v_stateWithheld = Number($('stateWithheld').value)||0;
-  const v_localWithheld = Number($('localWithheld').value)||0;
+  let finalRefund = finalPre - (finalFed + stateTax);
 
-  const prepayTotal = v_withheld + v_prepay + v_stateWithheld + v_localWithheld;
+  /* DISPLAY */
+  out_income.textContent = fmt(totalIncome, cur);
+  out_agi.textContent = fmt(agi, cur);
+  out_taxable.textContent = fmt(taxable, cur);
+  out_fedtax.textContent = fmt(finalFed, cur);
+  out_credits.textContent = fmt(credits, cur);
+  out_stateTax.textContent = fmt(stateTax, cur);
+  out_prepay.textContent = fmt(finalPre, cur);
+  out_final.textContent = fmt(finalRefund, cur);
 
-  // ESTIMATED REFUND
-  const estimatedRefund = prepayTotal - taxAfterCredits;
-
-  // STATE TAX
-  const v_stateRate = Number($('stateRate').value)||0;
-  const estStateTax = taxableIncome * (v_stateRate/100);
-
-  // UPDATE UI
-  $('out_totalIncome').textContent = fmtCurrency(totalIncome, cur);
-  $('out_taxable').textContent = fmtCurrency(taxableIncome, cur);
-  $('out_regtax').textContent = fmtCurrency(fedTax, cur);
-  $('out_credits').textContent = fmtCurrency(totalCredits, cur);
-  $('out_totalTax').textContent = fmtCurrency(taxAfterCredits, cur);
-  $('out_prepay').textContent = fmtCurrency(prepayTotal, cur);
-  $('out_stateTax').textContent = fmtCurrency(estStateTax, cur);
-
-  const rf = $('estRefund');
-  if(estimatedRefund >= 0){
-    rf.textContent = fmtCurrency(estimatedRefund, cur);
-    rf.classList.remove('refundNegative');
-    rf.classList.add('refundPositive');
-  } else {
-    rf.textContent = "Due " + fmtCurrency(Math.abs(estimatedRefund), cur);
-    rf.classList.remove('refundPositive');
-    rf.classList.add('refundNegative');
-  }
+  refundAmount.textContent =
+    finalRefund >= 0 ? fmt(finalRefund, cur) : "Due " + fmt(Math.abs(finalRefund), cur);
 }
 
-// ===============================
-// ITEMIZED TOGGLE
-// ===============================
-$('useStd').addEventListener('change', ()=>{
-  $('itemizedBox').style.display =
-    $('useStd').value === 'no' ? 'block' : 'none';
-});
+/* DOM Shortcuts */
+const wagesEl = document.getElementById("wages");
+const tipsEl = document.getElementById("tips");
+const bizEl = document.getElementById("biz");
+const ssEl = document.getElementById("ss");
+const intEl = document.getElementById("interest");
+const divEl = document.getElementById("div");
+const qdivEl = document.getElementById("qdiv");
+const stcgEl = document.getElementById("stcg");
+const ltcgEl = document.getElementById("ltcg");
+const passiveEl = document.getElementById("passive");
+const otherIncEl = document.getElementById("otherIncome");
 
-// ===============================
-// PNG EXPORT
-// ===============================
-$('pngBtn').addEventListener('click', ()=>{
-  const card = document.querySelector('.card:last-of-type');
-  html2canvas(card).then(canvas=>{
-    const a = document.createElement('a');
-    a.href = canvas.toDataURL('image/png');
-    a.download = 'tax_result.png';
-    a.click();
-  });
-});
+document.getElementById("calcBtn").onclick = calculate;
 
-// ===============================
-// CLEAR FUNCTION
-// ===============================
-$('clearBtn').addEventListener('click', ()=>{
-  $('wages').value = 6000;
-  $('tips').value = 0;
-  $('overtime').value = 0;
-  $('biz').value = 0;
-  $('ss').value = 0;
-  $('interest').value = 0;
-  $('dividends').value = 0;
-  $('qdiv').value = 0;
-  $('passive').value = 0;
-  $('stcg').value = 0;
-  $('ltcg').value = 0;
-  $('otherIncome').value = 0;
-  $('withheld').value = 4000;
-  $('prepayments').value = 0;
-  $('stateWithheld').value = 0;
-  $('localWithheld').value = 0;
-  $('stateRate').value = 0;
-  $('age').value = 28;
-  $('filingStatus').value = 'single';
-  calculate();
-});
+document.getElementById("useStd").onchange = (e)=>{
+  document.getElementById("itemizedSection").style.display =
+    e.target.value === "no" ? "block" : "none";
+};
 
-// ===============================
-// AUTO-CALCULATE ON LOAD
-// ===============================
-calculate();
+/* CLEAR */
+document.getElementById("clearBtn").onclick = ()=>{
+  location.reload();
+};
 
+/* PNG DOWNLOAD */
+document.getElementById("pngBtn").onclick = ()=>{
+  alert("PNG export will be enabled in next step (html2canvas).");
+};
 </script>
+
 </body>
 </html>
