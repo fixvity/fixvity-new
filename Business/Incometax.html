@@ -26,7 +26,7 @@ body{
 }
 
 .container{
-  max-width:1100px;
+  max-width:1200px;
   margin:auto;
   padding:14px;
 }
@@ -34,7 +34,6 @@ body{
 h1{
   text-align:center;
   color:var(--teal);
-  margin-bottom:16px;
 }
 
 .grid{
@@ -75,31 +74,16 @@ h1{
   margin-bottom:4px;
 }
 
-.row input, .row select{
+.row input,.row select{
   padding:10px;
   border-radius:var(--radius);
   border:1px solid var(--border);
-  font-size:15px;
 }
 
 .helper{
   font-size:12px;
   color:#666;
 }
-
-button{
-  background:var(--teal);
-  color:white;
-  border:0;
-  padding:10px 14px;
-  border-radius:var(--radius);
-  font-weight:700;
-  cursor:pointer;
-}
-
-button.secondary{background:#9e9e9e}
-
-button:hover{background:var(--teal-dark)}
 
 .actions{
   display:flex;
@@ -108,10 +92,17 @@ button:hover{background:var(--teal-dark)}
   margin-top:10px;
 }
 
-.result-line{
-  margin-bottom:8px;
-  font-size:15px;
+button{
+  background:var(--teal);
+  color:#fff;
+  border:0;
+  padding:10px 14px;
+  border-radius:var(--radius);
+  font-weight:700;
+  cursor:pointer;
 }
+button.secondary{background:#9e9e9e}
+button:hover{background:var(--teal-dark)}
 </style>
 </head>
 
@@ -122,124 +113,126 @@ button:hover{background:var(--teal-dark)}
 
 <div class="grid">
 
-<!-- LEFT -->
+<!-- LEFT SIDE -->
 <div>
 
 <div class="section-title">Filing Information</div>
 <div class="card">
   <div class="row">
+    <label>Tax Year</label>
+    <select id="year">
+      <option>2024</option>
+      <option>2025</option>
+      <option>2026</option>
+      <option>2027</option>
+      <option>2028</option>
+    </select>
+  </div>
+
+  <div class="row">
     <label>Filing Status</label>
     <select id="status">
       <option value="single">Single</option>
-      <option value="married_joint">Married Filing Jointly</option>
+      <option value="married">Married Filing Jointly</option>
       <option value="head">Head of Household</option>
-      <option value="widow">Qualified Widow</option>
     </select>
   </div>
 
   <div class="row">
     <label>Age</label>
     <input id="age" type="number" value="30">
-    <div class="helper">Extra deduction if age ≥ 65</div>
   </div>
 
   <div class="row">
     <label>Children Under 17</label>
     <input id="kids" type="number" value="0">
   </div>
+
+  <div class="row">
+    <label>Other Dependents</label>
+    <input id="otherDep" type="number" value="0">
+  </div>
 </div>
 
 <div class="section-title">Income</div>
 <div class="card">
-  <div class="row">
-    <label>Wages (W-2)</label>
-    <input id="wages" type="number" value="0">
-  </div>
+  <div class="row"><label>Wages</label><input id="wages" type="number" value="0"></div>
+  <div class="row"><label>Interest Income</label><input id="interest" type="number" value="0"></div>
+  <div class="row"><label>Ordinary Dividends</label><input id="dividends" type="number" value="0"></div>
+  <div class="row"><label>Qualified Dividends</label><input id="qdiv" type="number" value="0"></div>
+  <div class="row"><label>Short-Term Capital Gains</label><input id="stcg" type="number" value="0"></div>
+  <div class="row"><label>Long-Term Capital Gains</label><input id="ltcg" type="number" value="0"></div>
+  <div class="row"><label>Business Income</label><input id="biz" type="number" value="0"></div>
+  <div class="row"><label>Passive Income</label><input id="passive" type="number" value="0"></div>
+  <div class="row"><label>Social Security Benefits</label><input id="ss" type="number" value="0"></div>
+  <div class="row"><label>Other Income</label><input id="otherIncome" type="number" value="0"></div>
+</div>
 
+<div class="section-title">Deductions</div>
+<div class="card">
   <div class="row">
-    <label>Federal Tax Withheld</label>
-    <input id="withheld" type="number" value="0">
+    <label><input type="checkbox" id="useStandard" checked> Use Standard Deduction</label>
   </div>
+  <div class="row"><label>Itemized Deductions</label><input id="itemized" type="number" value="0"></div>
+  <div class="row"><label>Education Expenses</label><input id="edu" type="number" value="0"></div>
+  <div class="row"><label>State Tax Rate (%)</label><input id="stateRate" type="number" value="0"></div>
 </div>
 
 </div>
 
-<!-- RIGHT -->
+<!-- RIGHT SIDE -->
 <div>
-<div class="section-title">Results</div>
-<div class="card" id="resultsCard">
 
-  <div class="result-line"><b>Total Income:</b> <span id="r_income">—</span></div>
-  <div class="result-line"><b>Taxable Income:</b> <span id="r_taxable">—</span></div>
-  <div class="result-line"><b>Federal Tax:</b> <span id="r_tax">—</span></div>
-  <div class="result-line"><b>Refund / Due:</b> <span id="r_refund">—</span></div>
+<div class="section-title">Results</div>
+<div class="card">
+  <div><b>Total Income:</b> <span id="r_income">—</span></div>
+  <div><b>Deduction Used:</b> <span id="r_ded">—</span></div>
+  <div><b>Taxable Income:</b> <span id="r_taxable">—</span></div>
+  <div><b>Federal Tax:</b> <span id="r_tax">—</span></div>
+  <div><b>Refund / Amount Due:</b> <span id="r_refund">—</span></div>
 
   <div class="actions">
-    <button id="calcBtn">Calculate</button>
-    <button class="secondary" id="clearBtn">Clear</button>
+    <button onclick="calculate()">Calculate</button>
+    <button class="secondary" onclick="clearAll()">Clear</button>
   </div>
-
-</div>
 </div>
 
 </div>
 </div>
+</div>
 
-<!-- ====================== SCRIPT START ====================== -->
 <script>
-/* PART 2 — IRS DATA */
-const IRS = {
-  standardDeduction:{
-    single:14600,
-    married_joint:29200,
-    head:21900,
-    widow:29200,
-    add65:1950
-  }
-};
+function calculate(){
+  const get=id=>+document.getElementById(id).value||0;
 
-/* PART 3 — CALC ENGINE */
-function calculateTax(){
-  const wages = +wagesEl.value || 0;
-  const age = +ageEl.value || 0;
-  const status = statusEl.value;
-  const withheld = +withheldEl.value || 0;
+  const income =
+    get("wages")+get("interest")+get("dividends")+get("qdiv")+
+    get("stcg")+get("ltcg")+get("biz")+get("passive")+
+    get("ss")+get("otherIncome");
 
-  let deduction = IRS.standardDeduction[status];
-  if(age >= 65) deduction += IRS.standardDeduction.add65;
+  const standard= document.getElementById("useStandard").checked ? 14600 : 0;
+  const itemized = get("itemized");
+  const deduction = Math.max(standard,itemized);
 
-  const taxable = Math.max(0, wages - deduction);
-  const tax = taxable * 0.10;
-  const refund = withheld - tax;
+  const taxable = Math.max(0,income-deduction);
+  const tax = taxable*0.10;
 
-  r_income.textContent = wages.toLocaleString();
-  r_taxable.textContent = taxable.toLocaleString();
-  r_tax.textContent = tax.toLocaleString();
-  r_refund.textContent =
-    refund >= 0 ? refund.toLocaleString() : "Due " + Math.abs(refund).toLocaleString();
+  document.getElementById("r_income").textContent=income.toLocaleString();
+  document.getElementById("r_ded").textContent=deduction.toLocaleString();
+  document.getElementById("r_taxable").textContent=taxable.toLocaleString();
+  document.getElementById("r_tax").textContent=tax.toLocaleString();
+  document.getElementById("r_refund").textContent="Calculated";
 }
 
-/* PART 4 — EVENTS */
-const wagesEl = document.getElementById("wages");
-const ageEl = document.getElementById("age");
-const statusEl = document.getElementById("status");
-const withheldEl = document.getElementById("withheld");
-
-const r_income = document.getElementById("r_income");
-const r_taxable = document.getElementById("r_taxable");
-const r_tax = document.getElementById("r_tax");
-const r_refund = document.getElementById("r_refund");
-
-document.getElementById("calcBtn").onclick = calculateTax;
-
-document.getElementById("clearBtn").onclick = ()=>{
-  document.querySelectorAll("input").forEach(i=>i.value=0);
-  ageEl.value = 30;
-  r_income.textContent = r_taxable.textContent =
-  r_tax.textContent = r_refund.textContent = "—";
-};
+function clearAll(){
+  document.querySelectorAll("input").forEach(i=>i.type==="checkbox"?i.checked=true:i.value=0);
+  document.getElementById("r_income").textContent="—";
+  document.getElementById("r_ded").textContent="—";
+  document.getElementById("r_taxable").textContent="—";
+  document.getElementById("r_tax").textContent="—";
+  document.getElementById("r_refund").textContent="—";
+}
 </script>
-<!-- ====================== SCRIPT END ====================== -->
 
 </body>
 </html>
