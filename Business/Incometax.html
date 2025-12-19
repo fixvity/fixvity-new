@@ -3,138 +3,159 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Fixvity – Income Tax Calculator (2024–2028)</title>
+<title>Income Tax Calculator – Fixvity</title>
 
 <style>
 :root{
   --teal:#0b7285;
   --teal-dark:#055160;
   --border:#d9e2e6;
-  --bg:#f4fafb;
-  --white:#ffffff;
   --text:#1c1f21;
+  --muted:#666;
+  --bg:#f4fafb;
+  --white:#fff;
   --radius:10px;
+  font-family:Inter,system-ui,Arial;
 }
-
-*{box-sizing:border-box}
 
 body{
   margin:0;
   background:var(--bg);
-  font-family:system-ui,Arial;
   color:var(--text);
 }
 
 .container{
   max-width:1200px;
   margin:auto;
-  padding:14px;
+  padding:16px;
 }
 
 h1{
   text-align:center;
   color:var(--teal);
-}
-
-.grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:16px;
-}
-
-@media(max-width:900px){
-  .grid{grid-template-columns:1fr;}
+  font-weight:800;
+  margin-bottom:20px;
 }
 
 .section-title{
   background:var(--teal);
   color:#fff;
   padding:10px 14px;
+  font-size:18px;
   font-weight:700;
   border-radius:var(--radius);
-  margin-top:16px;
+  margin:20px 0 10px;
 }
 
 .card{
   background:var(--white);
+  padding:16px;
   border-radius:var(--radius);
-  padding:14px;
   border:1px solid var(--border);
-  box-shadow:0 4px 12px rgba(0,0,0,.06);
+  box-shadow:0 4px 16px rgba(0,0,0,.06);
 }
 
+/* ===== GRID ===== */
+.grid{
+  display:grid;
+  grid-template-columns: 1fr 420px;
+  gap:20px;
+}
+
+@media(max-width:900px){
+  .grid{
+    grid-template-columns:1fr;
+  }
+}
+
+/* ===== FORM ROWS ===== */
 .row{
   display:flex;
-  flex-direction:column;
-  margin-bottom:12px;
+  gap:10px;
+  margin-bottom:14px;
 }
 
 .row label{
+  flex:1;
   font-weight:600;
-  margin-bottom:4px;
 }
 
-.row input,.row select{
+.row input,
+.row select{
+  width:100%;
   padding:10px;
-  border-radius:var(--radius);
   border:1px solid var(--border);
+  border-radius:var(--radius);
 }
 
 .helper{
-  font-size:12px;
-  color:#666;
+  font-size:13px;
+  color:var(--muted);
+  margin-top:4px;
+}
+
+/* ===== RESULTS ===== */
+#resultsCard p{
+  margin:8px 0;
+  font-size:15px;
 }
 
 .actions{
   display:flex;
-  gap:10px;
   flex-wrap:wrap;
-  margin-top:10px;
+  gap:10px;
+  margin-top:12px;
 }
 
 button{
+  flex:1;
+  min-width:120px;
   background:var(--teal);
   color:#fff;
-  border:0;
-  padding:10px 14px;
+  border:none;
+  padding:10px;
   border-radius:var(--radius);
   font-weight:700;
   cursor:pointer;
 }
-button.secondary{background:#9e9e9e}
-button:hover{background:var(--teal-dark)}
+
+button.secondary{
+  background:#999;
+}
+
+button:hover{
+  background:var(--teal-dark);
+}
+
+/* ===== MOBILE RESULT ORDER ===== */
+@media(max-width:900px){
+  .results-wrap{
+    order:2;
+  }
+}
 </style>
 </head>
 
 <body>
-<div class="container">
 
+<div class="container">
 <h1>Fixvity – Income Tax Calculator (2024–2028)</h1>
 
 <div class="grid">
 
-<!-- LEFT SIDE -->
+<!-- ================= LEFT COLUMN ================= -->
 <div>
 
 <div class="section-title">Filing Information</div>
 <div class="card">
   <div class="row">
-    <label>Tax Year</label>
-    <select id="year">
-      <option>2024</option>
-      <option>2025</option>
-      <option>2026</option>
-      <option>2027</option>
-      <option>2028</option>
-    </select>
-  </div>
-
-  <div class="row">
     <label>Filing Status</label>
-    <select id="status">
+    <select id="filing">
       <option value="single">Single</option>
-      <option value="married">Married Filing Jointly</option>
+      <option value="married_joint">Married Filing Jointly</option>
+      <option value="married_separate">Married Filing Separately</option>
       <option value="head">Head of Household</option>
+      <option value="widow">Qualified Widow(er)</option>
     </select>
   </div>
 
@@ -142,97 +163,56 @@ button:hover{background:var(--teal-dark)}
     <label>Age</label>
     <input id="age" type="number" value="30">
   </div>
+  <div class="helper">Age affects standard deduction</div>
 
   <div class="row">
     <label>Children Under 17</label>
-    <input id="kids" type="number" value="0">
+    <input id="depUnder17" type="number" value="0">
   </div>
 
   <div class="row">
     <label>Other Dependents</label>
-    <input id="otherDep" type="number" value="0">
+    <input id="depOther" type="number" value="0">
   </div>
 </div>
 
 <div class="section-title">Income</div>
 <div class="card">
-  <div class="row"><label>Wages</label><input id="wages" type="number" value="0"></div>
-  <div class="row"><label>Interest Income</label><input id="interest" type="number" value="0"></div>
-  <div class="row"><label>Ordinary Dividends</label><input id="dividends" type="number" value="0"></div>
-  <div class="row"><label>Qualified Dividends</label><input id="qdiv" type="number" value="0"></div>
-  <div class="row"><label>Short-Term Capital Gains</label><input id="stcg" type="number" value="0"></div>
-  <div class="row"><label>Long-Term Capital Gains</label><input id="ltcg" type="number" value="0"></div>
-  <div class="row"><label>Business Income</label><input id="biz" type="number" value="0"></div>
-  <div class="row"><label>Passive Income</label><input id="passive" type="number" value="0"></div>
-  <div class="row"><label>Social Security Benefits</label><input id="ss" type="number" value="0"></div>
-  <div class="row"><label>Other Income</label><input id="otherIncome" type="number" value="0"></div>
-</div>
-
-<div class="section-title">Deductions</div>
-<div class="card">
-  <div class="row">
-    <label><input type="checkbox" id="useStandard" checked> Use Standard Deduction</label>
-  </div>
-  <div class="row"><label>Itemized Deductions</label><input id="itemized" type="number" value="0"></div>
-  <div class="row"><label>Education Expenses</label><input id="edu" type="number" value="0"></div>
-  <div class="row"><label>State Tax Rate (%)</label><input id="stateRate" type="number" value="0"></div>
+  <div class="row"><label>Wages</label><input id="wages" type="number"></div>
+  <div class="row"><label>Federal Tax Withheld</label><input id="fedWithheld" type="number"></div>
+  <div class="row"><label>State Tax Withheld</label><input id="stateWithheld" type="number"></div>
+  <div class="row"><label>Local Tax Withheld</label><input id="localWithheld" type="number"></div>
+  <div class="row"><label>Interest Income</label><input id="interest" type="number"></div>
+  <div class="row"><label>Dividends</label><input id="dividends" type="number"></div>
+  <div class="row"><label>Qualified Dividends</label><input id="qualifiedDiv" type="number"></div>
+  <div class="row"><label>Short-Term Capital Gains</label><input id="stcg" type="number"></div>
+  <div class="row"><label>Long-Term Capital Gains</label><input id="ltcg" type="number"></div>
 </div>
 
 </div>
 
-<!-- RIGHT SIDE -->
-<div>
-
+<!-- ================= RESULTS ================= -->
+<div class="results-wrap">
 <div class="section-title">Results</div>
-<div class="card">
-  <div><b>Total Income:</b> <span id="r_income">—</span></div>
-  <div><b>Deduction Used:</b> <span id="r_ded">—</span></div>
-  <div><b>Taxable Income:</b> <span id="r_taxable">—</span></div>
-  <div><b>Federal Tax:</b> <span id="r_tax">—</span></div>
-  <div><b>Refund / Amount Due:</b> <span id="r_refund">—</span></div>
+<div class="card" id="resultsCard">
+  <p><strong>Total Income:</strong> <span id="out_totalIncome">—</span></p>
+  <p><strong>Taxable Income:</strong> <span id="out_taxable">—</span></p>
+  <p><strong>Federal Tax:</strong> <span id="out_fedTax">—</span></p>
+  <p><strong>Credits:</strong> <span id="out_credits">—</span></p>
+  <p><strong>Total Tax Liability:</strong> <span id="out_totalTax">—</span></p>
+  <p><strong>Withholding & Payments:</strong> <span id="out_prepay">—</span></p>
+  <p><strong>Refund / Amount Due:</strong> <span id="out_refund">—</span></p>
 
   <div class="actions">
-    <button onclick="calculate()">Calculate</button>
-    <button class="secondary" onclick="clearAll()">Clear</button>
+    <button id="calcBtn">Calculate</button>
+    <button class="secondary" id="clearBtn">Clear</button>
+    <button id="savePNG">Download PNG</button>
   </div>
 </div>
+</div>
 
 </div>
 </div>
-</div>
-
-<script>
-function calculate(){
-  const get=id=>+document.getElementById(id).value||0;
-
-  const income =
-    get("wages")+get("interest")+get("dividends")+get("qdiv")+
-    get("stcg")+get("ltcg")+get("biz")+get("passive")+
-    get("ss")+get("otherIncome");
-
-  const standard= document.getElementById("useStandard").checked ? 14600 : 0;
-  const itemized = get("itemized");
-  const deduction = Math.max(standard,itemized);
-
-  const taxable = Math.max(0,income-deduction);
-  const tax = taxable*0.10;
-
-  document.getElementById("r_income").textContent=income.toLocaleString();
-  document.getElementById("r_ded").textContent=deduction.toLocaleString();
-  document.getElementById("r_taxable").textContent=taxable.toLocaleString();
-  document.getElementById("r_tax").textContent=tax.toLocaleString();
-  document.getElementById("r_refund").textContent="Calculated";
-}
-
-function clearAll(){
-  document.querySelectorAll("input").forEach(i=>i.type==="checkbox"?i.checked=true:i.value=0);
-  document.getElementById("r_income").textContent="—";
-  document.getElementById("r_ded").textContent="—";
-  document.getElementById("r_taxable").textContent="—";
-  document.getElementById("r_tax").textContent="—";
-  document.getElementById("r_refund").textContent="—";
-}
-</script>
 
 </body>
 </html>
