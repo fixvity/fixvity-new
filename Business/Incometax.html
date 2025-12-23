@@ -3,98 +3,131 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Fixvity – Income Tax Calculator (2025–2028)</title>
+<title>Income Tax Calculator (2025–2028)</title>
 
 <style>
 :root{
-  --blue:#0b4fa3;
-  --light:#f4f6f8;
-  --card:#ffffff;
+  --blue:#0b4f8a;
   --border:#d0d7de;
-  --text:#1f2937;
-  --success:#2e7d32;
-  --danger:#c62828;
-  --radius:10px;
-  font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+  --bg:#f4f6f8;
+  --card:#ffffff;
 }
 
 body{
   margin:0;
-  background:var(--light);
-  color:var(--text);
+  background:var(--bg);
+  font-family:system-ui,Arial;
 }
 
 .container{
-  max-width:1100px;
+  max-width:980px;
   margin:auto;
-  padding:14px;
+  padding:12px;
 }
 
 h1{
   text-align:center;
   color:var(--blue);
-  margin-bottom:20px;
+  margin:10px 0 18px;
 }
 
+/* Accordion */
 .accordion{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:8px;
+  margin-bottom:14px;
+  overflow:hidden;
+}
+
+.acc-header{
+  width:100%;
   background:var(--blue);
   color:#fff;
   padding:12px 14px;
-  font-size:18px;
+  font-size:16px;
   font-weight:700;
-  border-radius:var(--radius);
-  margin-top:14px;
+  border:none;
+  text-align:left;
   cursor:pointer;
 }
 
-.panel{
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:var(--radius);
-  padding:14px;
-  margin-top:6px;
+.acc-header::after{
+  content:"▾";
+  float:right;
 }
 
+.acc-header.active::after{
+  content:"▴";
+}
+
+.acc-body{
+  display:none;
+  padding:14px;
+}
+
+.acc-body.open{
+  display:block;
+}
+
+/* Rows */
 .row{
   display:grid;
-  grid-template-columns:1fr 1fr;
+  grid-template-columns:1fr 180px 1fr;
   gap:10px;
-  margin-bottom:10px;
+  align-items:center;
+  margin-bottom:12px;
 }
 
-.row label{
+@media(max-width:700px){
+  .row{
+    grid-template-columns:1fr;
+  }
+}
+
+label{
   font-weight:600;
 }
 
-input, select{
+/* Input with $ */
+.input-wrap{
+  position:relative;
+}
+
+.input-wrap span{
+  position:absolute;
+  left:10px;
+  top:50%;
+  transform:translateY(-50%);
+  color:#555;
+}
+
+.input-wrap input{
   width:100%;
-  padding:10px;
-  border-radius:8px;
+  padding:10px 10px 10px 22px;
   border:1px solid var(--border);
+  border-radius:6px;
   font-size:15px;
 }
 
-.small{
+select{
+  width:100%;
+  padding:10px;
+  border:1px solid var(--border);
+  border-radius:6px;
+}
+
+.helper{
   font-size:13px;
   color:#555;
 }
 
-button{
-  padding:12px 18px;
-  border-radius:8px;
-  border:none;
-  font-size:16px;
-  font-weight:700;
-  cursor:pointer;
-}
-
-.btn-primary{background:#2e7d32;color:#fff;}
-.btn-clear{background:#9e9e9e;color:#fff;}
-
+/* Results */
 .results{
-  margin-top:20px;
-  border:2px solid #000;
-  background:#fff;
+  background:#e9f3fb;
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:14px;
 }
 
 .results table{
@@ -102,25 +135,40 @@ button{
   border-collapse:collapse;
 }
 
-.results th, .results td{
-  border:1px solid #000;
-  padding:10px;
+.results td{
+  padding:8px;
+  border-bottom:1px solid #ccc;
+}
+
+.results td:last-child{
   text-align:right;
+  font-weight:700;
 }
 
-.results th{
-  text-align:left;
-  background:#e3f2fd;
-}
-
-.highlight{
-  background:#c8e6c9;
+.total{
+  background:#dceefd;
   font-weight:800;
-  font-size:18px;
 }
 
-@media(max-width:700px){
-  .row{grid-template-columns:1fr;}
+/* Buttons */
+.actions{
+  text-align:center;
+  margin:16px 0;
+}
+
+button{
+  background:#2e7d32;
+  color:#fff;
+  border:none;
+  padding:12px 20px;
+  border-radius:6px;
+  font-size:15px;
+  cursor:pointer;
+}
+
+button.clear{
+  background:#888;
+  margin-left:10px;
 }
 </style>
 </head>
@@ -128,146 +176,206 @@ button{
 <body>
 <div class="container">
 
-<h1>Fixvity – Income Tax Calculator (2025–2028)</h1>
+<h1>Income Tax Calculator (2025–2028)</h1>
 
-<!-- ================= FILING INFO ================= -->
-<div class="accordion">Filing Information</div>
-<div class="panel">
-
-<div class="row">
-  <label>Filing Status</label>
-  <select id="status">
-    <option value="single">Single</option>
-    <option value="married_joint">Married Filing Jointly</option>
-    <option value="married_separate">Married Filing Separately</option>
-    <option value="head">Head of Household</option>
-    <option value="widow">Qualified Widow(er)</option>
-  </select>
-</div>
+<!-- ================= Filing Info ================= -->
+<div class="accordion">
+<button class="acc-header">Filing Information</button>
+<div class="acc-body">
 
 <div class="row">
-  <label>Tax Year</label>
-  <select id="year">
-    <option value="2025">2025</option>
-    <option value="2026">2026</option>
-    <option value="2027">2027</option>
-    <option value="2028">2028</option>
-  </select>
+<label>Filing Status</label>
+<select id="status">
+<option value="single">Single</option>
+<option value="married">Married Filing Jointly</option>
+</select>
+<div></div>
 </div>
 
 <div class="row">
-  <label>Age</label>
-  <input type="number" id="age" value="30">
+<label>Tax Year</label>
+<select id="year">
+<option value="2025">2025</option>
+<option value="2026">2026</option>
+<option value="2027">2027</option>
+<option value="2028">2028</option>
+</select>
+<div></div>
 </div>
 
 <div class="row">
-  <label>Young Dependents (0–16)</label>
-  <input type="number" id="depYoung" value="0">
+<label>Age</label>
+<input type="number" id="age" value="30">
+<div></div>
 </div>
 
 <div class="row">
-  <label>Other Dependents (17+)</label>
-  <input type="number" id="depOther" value="0">
+<label>Young Dependents (0–16)</label>
+<input type="number" id="depYoung" value="0">
+<div class="helper">Child Tax Credit</div>
+</div>
+
+<div class="row">
+<label>Other Dependents (17+)</label>
+<input type="number" id="depOther" value="0">
+<div class="helper">$500 credit</div>
+</div>
+
 </div>
 </div>
 
-<!-- ================= INCOME ================= -->
-<div class="accordion">Income</div>
-<div class="panel">
+<!-- ================= Income ================= -->
+<div class="accordion">
+<button class="acc-header">Income</button>
+<div class="acc-body">
 
-<div class="row"><label>Wages (W-2 Box 1)</label><input id="wages" value="0"></div>
-<div class="row"><label>Tips Income</label><input id="tips" value="0"></div>
-<div class="row"><label>Overtime Income</label><input id="overtime" value="0"></div>
-<div class="row"><label>Federal Tax Withheld</label><input id="fedWithheld" value="0"></div>
-<div class="row"><label>State Tax Withheld</label><input id="stateWithheld" value="0"></div>
-<div class="row"><label>Local Tax Withheld</label><input id="localWithheld" value="0"></div>
-<div class="row"><label>Business / Self-Employment</label><input id="business" value="0"></div>
-<div class="row"><label>Social Security Income</label><input id="ss" value="0"></div>
-<div class="row"><label>Interest Income</label><input id="interest" value="0"></div>
-<div class="row"><label>Ordinary Dividends</label><input id="dividends" value="0"></div>
-<div class="row"><label>Qualified Dividends</label><input id="qdiv" value="0"></div>
-<div class="row"><label>Passive Income</label><input id="passive" value="0"></div>
-<div class="row"><label>Short-term Capital Gains</label><input id="stcg" value="0"></div>
-<div class="row"><label>Long-term Capital Gains</label><input id="ltcg" value="0"></div>
-<div class="row"><label>Other Income</label><input id="otherIncome" value="0"></div>
+<div class="row">
+<label>Wages (W-2 box 1)</label>
+<div class="input-wrap"><span>$</span><input type="number" id="wages" value="0"></div>
+<div></div>
 </div>
 
-<!-- ================= DEDUCTIONS ================= -->
-<div class="accordion">Deductions & Credits</div>
-<div class="panel">
-
-<div class="row"><label>Student Loan Interest</label><input id="studentLoan" value="0"></div>
-<div class="row"><label>Child & Dependent Care</label><input id="childCare" value="0"></div>
-<div class="row"><label>College Education (Total)</label><input id="education" value="0"></div>
-<div class="row"><label>IRA Contributions</label><input id="ira" value="0"></div>
-<div class="row"><label>Car Loan Interest</label><input id="carLoan" value="0"></div>
-<div class="row"><label>Mortgage Interest</label><input id="mortgage" value="0"></div>
-<div class="row"><label>Real Estate Tax</label><input id="realEstate" value="0"></div>
-<div class="row"><label>Charitable Donations</label><input id="charity" value="0"></div>
-<div class="row"><label>Other Deductibles</label><input id="otherDed" value="0"></div>
-
+<div class="row">
+<label>Federal Tax Withheld</label>
+<div class="input-wrap"><span>$</span><input type="number" id="fedWithheld" value="0"></div>
+<div class="helper">(W-2 box 2)</div>
 </div>
 
-<!-- ================= RESULTS ================= -->
-<div class="results" id="results">
+<div class="row">
+<label>State Tax Withheld</label>
+<div class="input-wrap"><span>$</span><input type="number" id="stateWithheld" value="0"></div>
+<div class="helper">(W-2 box 17)</div>
+</div>
+
+<div class="row">
+<label>Local Tax Withheld</label>
+<div class="input-wrap"><span>$</span><input type="number" id="localWithheld" value="0"></div>
+<div class="helper">(W-2 box 19)</div>
+</div>
+
+<div class="row">
+<label>Social Security Income</label>
+<div class="input-wrap"><span>$</span><input type="number" id="ss" value="0"></div>
+<div class="helper">SSA-1099, RRB-1099</div>
+</div>
+
+<div class="row">
+<label>Interest Income</label>
+<div class="input-wrap"><span>$</span><input type="number" id="interest" value="0"></div>
+<div class="helper">1099-INT</div>
+</div>
+
+<div class="row">
+<label>Qualified Dividends</label>
+<div class="input-wrap"><span>$</span><input type="number" id="qdiv" value="0"></div>
+<div class="helper">1099-DIV</div>
+</div>
+
+<div class="row">
+<label>Passive Income</label>
+<div class="input-wrap"><span>$</span><input type="number" id="passive" value="0"></div>
+<div class="helper">Rentals, royalties</div>
+</div>
+
+<div class="row">
+<label>Short-term Capital Gains</label>
+<div class="input-wrap"><span>$</span><input type="number" id="stcg" value="0"></div>
+<div></div>
+</div>
+
+<div class="row">
+<label>Long-term Capital Gains</label>
+<div class="input-wrap"><span>$</span><input type="number" id="ltcg" value="0"></div>
+<div></div>
+</div>
+
+</div>
+</div>
+
+<!-- ================= Deductions ================= -->
+<div class="accordion">
+<button class="acc-header">Deductions & Credits</button>
+<div class="acc-body">
+
+<div class="row">
+<label>Student Loan Interest</label>
+<div class="input-wrap"><span>$</span><input type="number" id="studentLoan" value="0"></div>
+<div class="helper">Max $2,500/person</div>
+</div>
+
+<div class="row">
+<label>Child & Dependent Care</label>
+<div class="input-wrap"><span>$</span><input type="number" id="care" value="0"></div>
+<div class="helper">$3,000/person, $6,000 total</div>
+</div>
+
+<div class="row">
+<label>College Education (Total)</label>
+<div class="input-wrap"><span>$</span><input type="number" id="education" value="0"></div>
+<div class="helper">AOTC / LLC</div>
+</div>
+
+<div class="row">
+<label>IRA Contributions</label>
+<div class="input-wrap"><span>$</span><input type="number" id="ira" value="0"></div>
+<div></div>
+</div>
+
+<div class="row">
+<label>Mortgage Interest</label>
+<div class="input-wrap"><span>$</span><input type="number" id="mortgage" value="0"></div>
+<div></div>
+</div>
+
+<div class="row">
+<label>Charitable Donations</label>
+<div class="input-wrap"><span>$</span><input type="number" id="charity" value="0"></div>
+<div></div>
+</div>
+
+</div>
+</div>
+
+<!-- ================= Results ================= -->
+<div class="results">
 <table>
-<tr><th>Total Income</th><td id="r_income">$0</td></tr>
-<tr><th>Total Deductions</th><td id="r_ded">$0</td></tr>
-<tr><th>Taxable Income</th><td id="r_taxable">$0</td></tr>
-<tr><th>Regular Taxes</th><td id="r_tax">$0</td></tr>
-<tr><th>All Tax Credits</th><td id="r_credits">$0</td></tr>
-<tr><th>Total Tax with Credits</th><td id="r_after">$0</td></tr>
-<tr><th>Tax Pre-payments</th><td id="r_prepaid">$0</td></tr>
-<tr class="highlight"><th>Estimated Refund</th><td id="r_refund">$0</td></tr>
+<tr><td>Total Income</td><td id="rIncome">$0</td></tr>
+<tr><td>Total Deductions</td><td id="rDed">$0</td></tr>
+<tr><td>Taxable Income</td><td id="rTaxable">$0</td></tr>
+<tr><td>Regular Taxes</td><td id="rTax">$0</td></tr>
+<tr><td>All Tax Credits</td><td id="rCredits">$0</td></tr>
+<tr class="total"><td>Estimated Refund</td><td id="rRefund">$0</td></tr>
 </table>
 </div>
 
-<br>
-<button class="btn-primary" onclick="calculate()">Calculate</button>
-<button class="btn-clear" onclick="location.reload()">Clear</button>
+<div class="actions">
+<button onclick="calc()">Calculate</button>
+<button class="clear" onclick="location.reload()">Clear</button>
+</div>
 
 </div>
 
 <script>
-const STD = {
-  2025:{single:15750,married_joint:31500,married_separate:15750,head:23625,widow:31500},
-  2026:{single:16000,married_joint:32000,married_separate:16000,head:24000,widow:32000},
-  2027:{single:16400,married_joint:32800,married_separate:16400,head:24600,widow:32800},
-  2028:{single:16800,married_joint:33600,married_separate:16800,head:25200,widow:33600}
-};
+document.querySelectorAll(".acc-header").forEach(b=>{
+  b.onclick=()=>{b.classList.toggle("active");b.nextElementSibling.classList.toggle("open")}
+});
+document.querySelector(".acc-header").click();
 
-function num(id){return Number(document.getElementById(id).value)||0;}
-function money(n){return "$"+Math.round(n).toLocaleString("en-US");}
-
-function calculate(){
-  const y=document.getElementById("year").value;
-  const s=document.getElementById("status").value;
-
-  const income = num("wages")+num("tips")+num("overtime")+num("business")+num("ss")
-    +num("interest")+num("dividends")+num("passive")+num("stcg")+num("ltcg")+num("otherIncome");
-
-  const deductions = STD[y][s]
-    +num("studentLoan")+num("childCare")+num("education")+num("ira")
-    +num("carLoan")+num("mortgage")+num("realEstate")+num("charity")+num("otherDed");
-
-  const taxable = Math.max(0,income-deductions);
-
-  let tax = taxable*0.1;
-  const credits = num("depYoung")*2000 + num("depOther")*500;
-
-  const after = tax-credits;
-  const prepaid = num("fedWithheld")+num("stateWithheld")+num("localWithheld");
-  const refund = prepaid-after;
-
-  r_income.textContent=money(income);
-  r_ded.textContent=money(deductions);
-  r_taxable.textContent=money(taxable);
-  r_tax.textContent=money(tax);
-  r_credits.textContent=money(credits);
-  r_after.textContent=money(after);
-  r_prepaid.textContent=money(prepaid);
-  r_refund.textContent=money(refund);
+function calc(){
+  const wages=+wagesEl.value;
+  const std=15750;
+  const taxable=Math.max(0,wages-std);
+  const fed=0;
+  const credits=(+depYoung.value*2000)+(+depOther.value*500);
+  const refund=(+fedWithheld.value)+credits;
+  rIncome.innerText="$"+wages;
+  rDed.innerText="$"+std;
+  rTaxable.innerText="$"+taxable;
+  rTax.innerText="$"+fed;
+  rCredits.innerText="$"+credits;
+  rRefund.innerText="$"+refund;
 }
 </script>
+
 </body>
 </html>
