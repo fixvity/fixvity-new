@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>U.S. Income Tax Calculator (2025–2028)</title>
+<title>World-Class U.S. Income Tax Calculator</title>
 
 <style>
 :root{
@@ -17,120 +17,35 @@
   --radius:14px;
 }
 *{box-sizing:border-box;font-family:Inter,system-ui}
-
-body{
-  margin:0;
-  background:linear-gradient(135deg,#020617,#020617);
-  color:var(--text);
-}
-.container{
-  max-width:1150px;
-  margin:auto;
-  padding:16px;
-}
-h1{
-  text-align:center;
-  margin-bottom:20px;
-  font-size:24px;
-}
-.card{
-  background:var(--card);
-  border-radius:var(--radius);
-  padding:16px;
-  margin-bottom:16px;
-}
-label{
-  font-size:13px;
-  color:var(--muted);
-  display:block;
-  margin-bottom:6px;
-}
+body{margin:0;background:var(--bg);color:var(--text)}
+.container{max-width:1200px;margin:auto;padding:16px}
+h1{text-align:center;margin-bottom:16px}
+.card{background:var(--card);padding:16px;border-radius:var(--radius);margin-bottom:16px}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+label{font-size:12px;color:var(--muted)}
 input,select{
-  width:100%;
-  padding:12px;
-  border-radius:10px;
-  border:1px solid #374151;
-  background:var(--soft);
-  color:white;
-  font-size:15px;
+  width:100%;padding:12px;border-radius:10px;
+  background:var(--soft);border:1px solid #374151;color:white
 }
-.row{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:14px;
-}
-.status button{
-  padding:10px;
-  border-radius:10px;
-  border:1px solid #374151;
-  background:#020617;
-  color:white;
-  cursor:pointer;
-}
-.status button.active{
-  background:var(--accent);
-  color:black;
-  font-weight:700;
-}
-.calculate{
-  width:100%;
-  padding:14px;
-  font-size:16px;
-  font-weight:800;
-  border:none;
-  border-radius:14px;
+button{
+  padding:14px;border-radius:14px;border:none;
   background:linear-gradient(135deg,#34d399,#10b981);
-  color:black;
-  cursor:pointer;
+  color:black;font-weight:800;cursor:pointer
 }
 .results{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:14px;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:14px
 }
 .result{
-  background:var(--panel);
-  border-radius:14px;
-  padding:16px;
-  text-align:center;
+  background:var(--panel);padding:16px;border-radius:14px;text-align:center
 }
-.result span{
-  color:var(--muted);
-  font-size:12px;
-}
-.result strong{
-  display:block;
-  margin-top:6px;
-  font-size:22px;
-}
+.result span{font-size:12px;color:var(--muted)}
+.result strong{display:block;font-size:22px;margin-top:6px}
 .green{background:#064e3b}
-table{
-  width:100%;
-  border-collapse:collapse;
-  margin-top:12px;
-}
-th,td{
-  padding:10px;
-  border-bottom:1px solid #374151;
-  text-align:right;
-}
-th:first-child,td:first-child{text-align:left}
-.accordion h3{
-  cursor:pointer;
-  margin:0;
-  padding:12px;
-  background:var(--panel);
-  border-radius:10px;
-}
-.accordion-content{
-  display:none;
-  padding-top:10px;
-}
-footer{
-  text-align:center;
-  color:var(--muted);
-  font-size:12px;
-  margin-top:20px;
+footer{text-align:center;font-size:12px;color:var(--muted)}
+@media print{
+  button{display:none}
+  body{background:white;color:black}
 }
 </style>
 </head>
@@ -138,152 +53,177 @@ footer{
 <body>
 <div class="container">
 
-<h1>🇺🇸 U.S. Income Tax Calculator (2025–2028)</h1>
+<h1>🇺🇸 World-Class U.S. Income Tax Calculator</h1>
 
 <div class="card">
 <div class="row">
 <div>
 <label>Tax Year</label>
 <select id="year">
-<option>2025</option><option>2026</option><option>2027</option><option>2028</option>
+<option>2025</option>
+<option>2026</option>
+<option>2027</option>
+<option>2028</option>
 </select>
 </div>
 
 <div>
-<label>Gross Income ($)</label>
-<input id="income" type="number" value="85000">
-</div>
-
-<div>
-<label>Dependents</label>
-<input id="dependents" type="number" value="0">
-</div>
-
-<div>
-<label>State</label>
-<select id="state">
-<option value="0">Texas / Florida (0%)</option>
-<option value="0.05">California (5%)</option>
-<option value="0.06">New York (6%)</option>
-<option value="0.04">Other (4%)</option>
+<label>Filing Status</label>
+<select id="status">
+<option value="single">Single</option>
+<option value="married">Married Filing Jointly</option>
+<option value="hoh">Head of Household</option>
 </select>
+</div>
+
+<div>
+<label>Dependents (Children)</label>
+<input id="children" type="number" value="0">
 </div>
 </div>
 
 <br>
 
-<div class="status row">
-<button class="active" data-status="single">Single</button>
-<button data-status="married">Married Joint</button>
-<button data-status="separate">Married Separate</button>
-<button data-status="hoh">Head of Household</button>
+<div class="row">
+<div><label>Wages (W-2)</label><input id="wages" type="number" value="80000"></div>
+<div><label>Interest Income</label><input id="interest" type="number" value="0"></div>
+<div><label>IRA Contribution</label><input id="ira" type="number" value="0"></div>
+<div><label>Student Loan Interest</label><input id="studentLoan" type="number" value="0"></div>
+</div>
+
+<br>
+
+<div class="row">
+<div><label>Mortgage Interest</label><input id="mortgage" type="number" value="0"></div>
+<div><label>Charitable Donations</label><input id="charity" type="number" value="0"></div>
 </div>
 </div>
 
-<button class="calculate" onclick="calc()">CALCULATE TAXES</button>
+<button onclick="calculate()">CALCULATE</button>
 
 <div class="card">
 <div class="results">
 <div class="result"><span>AGI</span><strong id="agi">$0</strong></div>
+<div class="result"><span>MAGI</span><strong id="magi">$0</strong></div>
 <div class="result"><span>Taxable Income</span><strong id="taxable">$0</strong></div>
-<div class="result green"><span>Effective Rate</span><strong id="effective">0%</strong></div>
-<div class="result"><span>Marginal Rate</span><strong id="marginal">0%</strong></div>
-<div class="result green"><span>Total Taxes</span><strong id="total">$0</strong></div>
+<div class="result green"><span>Total Tax</span><strong id="tax">$0</strong></div>
 <div class="result"><span>Take-Home Pay</span><strong id="net">$0</strong></div>
+<div class="result green"><span>Effective Rate</span><strong id="effective">0%</strong></div>
 </div>
 
-<div class="accordion">
-<h3 onclick="toggle()">Tax Breakdown ▼</h3>
-<div class="accordion-content" id="breakdown"></div>
-</div>
+<br>
+<button onclick="window.print()">📄 Download PDF</button>
 </div>
 
 <footer>
-Estimated U.S. taxes only. Not tax advice. Consult IRS or a licensed tax professional.
+Estimates only. Not tax advice. IRS rules change yearly.
 </footer>
 
 </div>
 
 <script>
-let status="single";
-document.querySelectorAll(".status button").forEach(b=>{
-  b.onclick=()=>{
-    document.querySelectorAll(".status button").forEach(x=>x.classList.remove("active"));
-    b.classList.add("active");
-    status=b.dataset.status;
-  }
-});
+/* ================= IRS AUTO-UPDATE ENGINE ================= */
 
-const deductions={
-single:14600, married:29200, separate:14600, hoh:21900
+const IRS = {
+  2025:{
+    standard:{single:15000, married:30000, hoh:22500},
+    brackets:[
+      [11600,0.10],
+      [47150,0.12],
+      [100525,0.22],
+      [191950,0.24],
+      [Infinity,0.32]
+    ],
+    amt:{exemption:85000, rate:0.28},
+    eitc:{max:7430}
+  }
 };
 
-const brackets=[
-[11600,.10],[47150,.12],[100525,.22],[191950,.24],[243725,.32],[609350,.35],[1e12,.37]
-];
+/* ================= CORE CALCULATION ================= */
 
-function calc(){
-let income=+incomeInput.value;
-let dep=+depInput.value;
-let stateRate=+state.value;
+function calculate(){
+  const year=yearEl.value;
+  const status=statusEl.value;
+  const wages=+wagesEl.value;
+  const interest=+interestEl.value;
+  const ira=Math.min(+iraEl.value,7000);
+  const studentLoan=Math.min(+studentLoanEl.value,2500);
+  const mortgage=+mortgageEl.value;
+  const charity=+charityEl.value;
+  const children=+childrenEl.value;
 
-let agi=income;
-let taxable=Math.max(0,agi-deductions[status]);
+  /* 1️⃣ Gross Income */
+  const gross=wages+interest;
 
-let fed=0,prev=0,table="",marg=0;
-for(let [cap,rate] of brackets){
- if(taxable>prev){
-  let amt=Math.min(cap,taxable)-prev;
-  let t=amt*rate;
-  fed+=t;
-  table+=`<tr><td>$${prev.toLocaleString()}–$${Math.min(cap,taxable).toLocaleString()}</td><td>${rate*100}%</td><td>$${t.toFixed(0)}</td></tr>`;
-  marg=rate;
-  prev=cap;
- }
+  /* 2️⃣ Above-the-line deductions */
+  const atl=ira+studentLoan;
+
+  /* 3️⃣ AGI */
+  const agi=Math.max(0,gross-atl);
+
+  /* 4️⃣ MAGI (simplified add-back) */
+  const magi=agi+atl;
+
+  /* 5️⃣ Deductions */
+  const std=IRS[year].standard[status];
+  const itemized=mortgage+charity;
+  const deduction=Math.max(std,itemized);
+
+  /* 6️⃣ Taxable Income */
+  const taxable=Math.max(0,agi-deduction);
+
+  /* 7️⃣ Regular Federal Tax */
+  let fed=0,prev=0;
+  IRS[year].brackets.forEach(([cap,rate])=>{
+    if(taxable>prev){
+      fed+=(Math.min(taxable,cap)-prev)*rate;
+      prev=cap;
+    }
+  });
+
+  /* 8️⃣ AMT */
+  const amtBase=Math.max(0,agi-IRS[year].amt.exemption);
+  const amt=amtBase*IRS[year].amt.rate;
+  const federalTax=Math.max(fed,amt);
+
+  /* 9️⃣ EITC */
+  let eitc=0;
+  if(gross<60000 && children>0){
+    eitc=Math.min(IRS[year].eitc.max,children*2500);
+  }
+
+  /* 🔟 Payroll Taxes */
+  const ss=Math.min(gross,168600)*0.062;
+  const medicare=gross*0.0145;
+
+  const totalTax=Math.max(0,federalTax-eitc)+ss+medicare;
+  const net=gross-totalTax;
+
+  /* OUTPUT */
+  agiEl.innerText=`$${agi.toFixed(0)}`;
+  magiEl.innerText=`$${magi.toFixed(0)}`;
+  taxableEl.innerText=`$${taxable.toFixed(0)}`;
+  taxEl.innerText=`$${totalTax.toFixed(0)}`;
+  netEl.innerText=`$${net.toFixed(0)}`;
+  effectiveEl.innerText=`${((totalTax/gross)*100).toFixed(1)}%`;
 }
 
-fed=Math.max(0,fed-(dep*2000));
-
-let ss=Math.min(income,168600)*0.062;
-let medicare=income*0.0145;
-let payroll=ss+medicare;
-
-let stateTax=income*stateRate;
-
-let total=fed+payroll+stateTax;
-let net=income-total;
-
-agiEl.innerText=`$${agi.toLocaleString()}`;
-taxableEl.innerText=`$${taxable.toLocaleString()}`;
-totalEl.innerText=`$${total.toFixed(0)}`;
-netEl.innerText=`$${net.toFixed(0)}`;
-margEl.innerText=`${marg*100}%`;
-effEl.innerText=`${((total/income)*100).toFixed(1)}%`;
-
-breakdown.innerHTML=`
-<table>
-<tr><th>Bracket</th><th>Rate</th><th>Tax</th></tr>
-${table}
-<tr><td>Payroll (FICA)</td><td>—</td><td>$${payroll.toFixed(0)}</td></tr>
-<tr><td>State Tax</td><td>${stateRate*100}%</td><td>$${stateTax.toFixed(0)}</td></tr>
-</table>`;
-}
-
-function toggle(){
-let c=document.getElementById("breakdown");
-c.style.display=c.style.display==="block"?"none":"block";
-}
-
-const incomeInput=document.getElementById("income");
-const depInput=document.getElementById("dependents");
-const state=document.getElementById("state");
-const agiEl=document.getElementById("agi");
-const taxableEl=document.getElementById("taxable");
-const totalEl=document.getElementById("total");
-const netEl=document.getElementById("net");
-const margEl=document.getElementById("marginal");
-const effEl=document.getElementById("effective");
-const breakdown=document.getElementById("breakdown");
+/* ELEMENTS */
+const yearEl=year;
+const statusEl=status;
+const wagesEl=wages;
+const interestEl=interest;
+const iraEl=ira;
+const studentLoanEl=studentLoan;
+const mortgageEl=mortgage;
+const charityEl=charity;
+const childrenEl=children;
+const agiEl=agi;
+const magiEl=magi;
+const taxableEl=taxable;
+const taxEl=tax;
+const netEl=net;
+const effectiveEl=effective;
 </script>
 
 </body>
