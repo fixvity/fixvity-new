@@ -1,381 +1,624 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Income Tax Calculator (2025–2028)</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>US Federal Income Tax Calculator 2025-2028</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-<style>
-:root{
-  --blue:#0b4f8a;
-  --border:#d0d7de;
-  --bg:#f4f6f8;
-  --card:#ffffff;
-}
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #f1f5f9;
+        }
 
-body{
-  margin:0;
-  background:var(--bg);
-  font-family:system-ui,Arial;
-}
+        .tax-calculator {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
 
-.container{
-  max-width:980px;
-  margin:auto;
-  padding:12px;
-}
+        .header {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
 
-h1{
-  text-align:center;
-  color:var(--blue);
-  margin:10px 0 18px;
-}
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: float 6s ease-in-out infinite;
+        }
 
-/* Accordion */
-.accordion{
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:8px;
-  margin-bottom:14px;
-  overflow:hidden;
-}
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
 
-.acc-header{
-  width:100%;
-  background:var(--blue);
-  color:#fff;
-  padding:12px 14px;
-  font-size:16px;
-  font-weight:700;
-  border:none;
-  text-align:left;
-  cursor:pointer;
-}
+        .header h1 {
+            font-size: 2.8em;
+            font-weight: 800;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 1;
+        }
 
-.acc-header::after{
-  content:"▾";
-  float:right;
-}
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+        }
 
-.acc-header.active::after{
-  content:"▴";
-}
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            padding: 50px;
+        }
 
-.acc-body{
-  display:none;
-  padding:14px;
-}
+        .section {
+            background: rgba(30, 41, 59, 0.6);
+            padding: 35px;
+            border-radius: 20px;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            backdrop-filter: blur(10px);
+        }
 
-.acc-body.open{
-  display:block;
-}
+        .section h3 {
+            font-size: 1.5em;
+            margin-bottom: 25px;
+            color: #f8fafc;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-/* Rows */
-.row{
-  display:grid;
-  grid-template-columns:1fr 180px 1fr;
-  gap:10px;
-  align-items:center;
-  margin-bottom:12px;
-}
+        .input-group {
+            margin-bottom: 25px;
+        }
 
-@media(max-width:700px){
-  .row{
-    grid-template-columns:1fr;
-  }
-}
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #e2e8f0;
+            font-size: 0.95em;
+        }
 
-label{
-  font-weight:600;
-}
+        input, select {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid rgba(148, 163, 184, 0.3);
+            border-radius: 12px;
+            font-size: 1.1em;
+            background: rgba(51, 65, 85, 0.6);
+            color: #f1f5f9;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
 
-/* Input with $ */
-.input-wrap{
-  position:relative;
-}
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: rgba(51, 65, 85, 0.9);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+        }
 
-.input-wrap span{
-  position:absolute;
-  left:10px;
-  top:50%;
-  transform:translateY(-50%);
-  color:#555;
-}
+        input::placeholder {
+            color: #94a3b8;
+        }
 
-.input-wrap input{
-  width:100%;
-  padding:10px 10px 10px 22px;
-  border:1px solid var(--border);
-  border-radius:6px;
-  font-size:15px;
-}
+        .year-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
 
-select{
-  width:100%;
-  padding:10px;
-  border:1px solid var(--border);
-  border-radius:6px;
-}
+        .year-btn {
+            flex: 1;
+            min-width: 80px;
+            padding: 14px 20px;
+            border: 2px solid rgba(148, 163, 184, 0.3);
+            border-radius: 12px;
+            background: transparent;
+            color: #e2e8f0;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
 
-.helper{
-  font-size:13px;
-  color:#555;
-}
+        .year-btn.active, .year-btn:hover {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            color: white;
+            transform: translateY(-2px);
+        }
 
-/* Results */
-.results{
-  background:#e9f3fb;
-  border:1px solid var(--border);
-  border-radius:8px;
-  padding:14px;
-}
+        .filing-status {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 25px;
+        }
 
-.results table{
-  width:100%;
-  border-collapse:collapse;
-}
+        .status-btn {
+            padding: 14px 18px;
+            border: 2px solid rgba(148, 163, 184, 0.3);
+            border-radius: 12px;
+            background: transparent;
+            color: #e2e8f0;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
 
-.results td{
-  padding:8px;
-  border-bottom:1px solid #ccc;
-}
+        .status-btn.active {
+            background: #10b981;
+            border-color: #10b981;
+            color: white;
+        }
 
-.results td:last-child{
-  text-align:right;
-  font-weight:700;
-}
+        .deductions-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
 
-.total{
-  background:#dceefd;
-  font-weight:800;
-}
+        .calculate-btn {
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 1.3em;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 20px;
+        }
 
-/* Buttons */
-.actions{
-  text-align:center;
-  margin:16px 0;
-}
+        .calculate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 40px rgba(16, 185, 129, 0.4);
+        }
 
-button{
-  background:#2e7d32;
-  color:#fff;
-  border:none;
-  padding:12px 20px;
-  border-radius:6px;
-  font-size:15px;
-  cursor:pointer;
-}
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
 
-button.clear{
-  background:#888;
-  margin-left:10px;
-}
-</style>
+        .result-card {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(99, 102, 241, 0.2));
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .result-card.effective {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(34, 197, 94, 0.2));
+            border-color: rgba(16, 185, 129, 0.4);
+        }
+
+        .result-card.total {
+            grid-column: span 2;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-color: rgba(16, 185, 129, 0.6);
+        }
+
+        .result-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .result-value {
+            font-size: 2.5em;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .result-value small {
+            font-size: 0.4em;
+            opacity: 0.8;
+            font-weight: 400;
+        }
+
+        .brackets-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .brackets-table th {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            padding: 18px;
+            text-align: left;
+            font-weight: 700;
+        }
+
+        .brackets-table td {
+            padding: 18px;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .brackets-table tr.current {
+            background: rgba(16, 185, 129, 0.2);
+            font-weight: 700;
+        }
+
+        .brackets-table tr:hover {
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        @media (max-width: 1024px) {
+            .content {
+                grid-template-columns: 1fr;
+                padding: 30px;
+                gap: 30px;
+            }
+
+            .results-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .result-card.total {
+                grid-column: span 2;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+
+            .header h1 {
+                font-size: 2.2em;
+            }
+
+            .content {
+                padding: 20px 15px;
+            }
+
+            .section {
+                padding: 25px 20px;
+            }
+
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .result-card.total {
+                grid-column: span 1;
+            }
+
+            .deductions-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
-
 <body>
-<div class="container">
+    <div class="tax-calculator">
+        <div class="header">
+            <h1>🇺🇸 US Federal Income Tax Calculator</h1>
+            <p>2025-2028 | IRS Tax Brackets, Standard Deduction & Itemized [Projected]</p>
+        </div>
 
-<h1>Income Tax Calculator (2025–2028)</h1>
+        <div class="content">
+            <div class="section">
+                <h3>📊 Income & Filing</h3>
+                
+                <div class="year-selector">
+                    <button class="year-btn active" data-year="2025">2025</button>
+                    <button class="year-btn" data-year="2026">2026</button>
+                    <button class="year-btn" data-year="2027">2027</button>
+                    <button class="year-btn" data-year="2028">2028</button>
+                </div>
 
-<!-- ================= Filing Info ================= -->
-<div class="accordion">
-<button class="acc-header">Filing Information</button>
-<div class="acc-body">
+                <div class="input-group">
+                    <label>Tax Year</label>
+                    <select id="taxYear">
+                        <option value="2025">2025</option>
+                        <option value="2026">2026</option>
+                        <option value="2027">2027</option>
+                        <option value="2028">2028</option>
+                    </select>
+                </div>
 
-<div class="row">
-<label>Filing Status</label>
-<select id="status">
-<option value="single">Single</option>
-<option value="married">Married Filing Jointly</option>
-</select>
-<div></div>
-</div>
+                <div class="input-group">
+                    <label>Gross Income ($)</label>
+                    <input type="number" id="grossIncome" value="85000" min="0" step="1000" placeholder="Enter your total income">
+                </div>
 
-<div class="row">
-<label>Tax Year</label>
-<select id="year">
-<option value="2025">2025</option>
-<option value="2026">2026</option>
-<option value="2027">2027</option>
-<option value="2028">2028</option>
-</select>
-<div></div>
-</div>
+                <div class="filing-status">
+                    <div class="status-btn active" data-status="single">Single</div>
+                    <div class="status-btn" data-status="marriedJoint">Married Joint</div>
+                    <div class="status-btn" data-status="marriedSeparate">Married Separate</div>
+                    <div class="status-btn" data-status="hof">Head of Household</div>
+                </div>
 
-<div class="row">
-<label>Age</label>
-<input type="number" id="age" value="30">
-<div></div>
-</div>
+                <h4 style="margin: 25px 0 15px 0; color: #e2e8f0; font-size: 1.1em;">Deductions</h4>
+                
+                <div class="input-group">
+                    <label>Standard / Itemized Deduction ($)</label>
+                    <input type="number" id="deductions" value="15000" min="0" step="100" placeholder="Standard deduction auto-applies">
+                </div>
 
-<div class="row">
-<label>Young Dependents (0–16)</label>
-<input type="number" id="depYoung" value="0">
-<div class="helper">Child Tax Credit</div>
-</div>
+                <div class="input-group">
+                    <label>Dependents</label>
+                    <input type="number" id="dependents" value="0" min="0" max="10" step="1">
+                </div>
 
-<div class="row">
-<label>Other Dependents (17+)</label>
-<input type="number" id="depOther" value="0">
-<div class="helper">$500 credit</div>
-</div>
+                <button class="calculate-btn" onclick="calculateTax()">Calculate My Taxes</button>
+            </div>
 
-</div>
-</div>
+            <div class="section">
+                <h3>📈 Tax Breakdown</h3>
+                
+                <div class="results-grid">
+                    <div class="result-card">
+                        <div class="result-label">AGI</div>
+                        <div class="result-value" id="agi">$<span>0</span><small></small></div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-label">Taxable Income</div>
+                        <div class="result-value" id="taxableIncome">$<span>0</span><small></small></div>
+                    </div>
+                    <div class="result-card effective">
+                        <div class="result-label">Effective Rate</div>
+                        <div class="result-value" id="effectiveRate">0<small>%</small></div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-label">Marginal Rate</div>
+                        <div class="result-value" id="marginalRate">0<small>%</small></div>
+                    </div>
+                    <div class="result-card total">
+                        <div class="result-label">Total Federal Tax</div>
+                        <div class="result-value" id="totalTax">$<span>0</span><small></small></div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-label">Take Home Pay</div>
+                        <div class="result-value" id="takeHome">$<span>0</span><small>Annual</small></div>
+                    </div>
+                </div>
 
-<!-- ================= Income ================= -->
-<div class="accordion">
-<button class="acc-header">Income</button>
-<div class="acc-body">
+                <div id="bracketsTable"></div>
+            </div>
+        </div>
+    </div>
 
-<div class="row">
-<label>Wages (W-2 box 1)</label>
-<div class="input-wrap"><span>$</span><input type="number" id="wages" value="0"></div>
-<div></div>
-</div>
+    <script>
+        // US Federal Tax Brackets 2025-2028 (Projected with 2.5% annual inflation adjustment)
+        const taxBrackets = {
+            2025: {
+                single: [
+                    { min: 0, max: 11600, rate: 0.10 },
+                    { min: 11600, max: 47150, rate: 0.12 },
+                    { min: 47150, max: 100525, rate: 0.22 },
+                    { min: 100525, max: 191950, rate: 0.24 },
+                    { min: 191950, max: 243725, rate: 0.32 },
+                    { min: 243725, max: 609350, rate: 0.35 },
+                    { min: 609350, Infinity, rate: 0.37 }
+                ],
+                marriedJoint: [
+                    { min: 0, max: 23200, rate: 0.10 },
+                    { min: 23200, max: 94300, rate: 0.12 },
+                    { min: 94300, max: 201050, rate: 0.22 },
+                    { min: 201050, max: 383900, rate: 0.24 },
+                    { min: 383900, max: 487450, rate: 0.32 },
+                    { min: 487450, max: 731200, rate: 0.35 },
+                    { min: 731200, Infinity, rate: 0.37 }
+                ],
+                marriedSeparate: [
+                    { min: 0, max: 11600, rate: 0.10 },
+                    { min: 11600, max: 47150, rate: 0.12 },
+                    { min: 47150, max: 100525, rate: 0.22 },
+                    { min: 100525, max: 191950, rate: 0.24 },
+                    { min: 191950, max: 243725, rate: 0.32 },
+                    { min: 243725, max: 365600, rate: 0.35 },
+                    { min: 365600, Infinity, rate: 0.37 }
+                ],
+                hof: [
+                    { min: 0, max: 16550, rate: 0.10 },
+                    { min: 16550, max: 63100, rate: 0.12 },
+                    { min: 63100, max: 100500, rate: 0.22 },
+                    { min: 100500, max: 191900, rate: 0.24 },
+                    { min: 191900, max: 243700, rate: 0.32 },
+                    { min: 243700, max: 609350, rate: 0.35 },
+                    { min: 609350, Infinity, rate: 0.37 }
+                ]
+            }
+            // Future years auto-calculated with inflation adjustment
+        };
 
-<div class="row">
-<label>Federal Tax Withheld</label>
-<div class="input-wrap"><span>$</span><input type="number" id="fedWithheld" value="0"></div>
-<div class="helper">(W-2 box 2)</div>
-</div>
+        // Standard Deduction (Projected)
+        const standardDeductions = {
+            2025: {
+                single: 15000,
+                marriedJoint: 30000,
+                marriedSeparate: 15000,
+                hof: 22500
+            }
+        };
 
-<div class="row">
-<label>State Tax Withheld</label>
-<div class="input-wrap"><span>$</span><input type="number" id="stateWithheld" value="0"></div>
-<div class="helper">(W-2 box 17)</div>
-</div>
+        // Child Tax Credit per dependent (phased out above certain income)
+        const childTaxCredit = 2000;
 
-<div class="row">
-<label>Local Tax Withheld</label>
-<div class="input-wrap"><span>$</span><input type="number" id="localWithheld" value="0"></div>
-<div class="helper">(W-2 box 19)</div>
-</div>
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
 
-<div class="row">
-<label>Social Security Income</label>
-<div class="input-wrap"><span>$</span><input type="number" id="ss" value="0"></div>
-<div class="helper">SSA-1099, RRB-1099</div>
-</div>
+        function getInflationAdjustedValue(baseYear, targetYear, baseValue) {
+            const years = targetYear - baseYear;
+            return Math.round(baseValue * Math.pow(1.025, years));
+        }
 
-<div class="row">
-<label>Interest Income</label>
-<div class="input-wrap"><span>$</span><input type="number" id="interest" value="0"></div>
-<div class="helper">1099-INT</div>
-</div>
+        function calculateTax() {
+            const grossIncome = parseFloat(document.getElementById('grossIncome').value) || 0;
+            const taxYear = parseInt(document.getElementById('taxYear').value);
+            const filingStatus = document.querySelector('.status-btn.active').dataset.status;
+            const manualDeductions = parseFloat(document.getElementById('deductions').value) || 0;
+            const dependents = parseInt(document.getElementById('dependents').value) || 0;
 
-<div class="row">
-<label>Qualified Dividends</label>
-<div class="input-wrap"><span>$</span><input type="number" id="qdiv" value="0"></div>
-<div class="helper">1099-DIV</div>
-</div>
+            // Get brackets for the year (inflation adjusted)
+            const baseBrackets = taxBrackets['2025'][filingStatus];
+            const brackets = baseBrackets.map(bracket => ({
+                min: getInflationAdjustedValue(2025, taxYear, bracket.min),
+                max: getInflationAdjustedValue(2025, taxYear, bracket.max),
+                rate: bracket.rate
+            }));
 
-<div class="row">
-<label>Passive Income</label>
-<div class="input-wrap"><span>$</span><input type="number" id="passive" value="0"></div>
-<div class="helper">Rentals, royalties</div>
-</div>
+            // Standard deduction (auto or manual)
+            const stdDeduction = getInflationAdjustedValue(2025, taxYear, standardDeductions[2025][filingStatus]);
+            const totalDeductions = Math.max(stdDeduction, manualDeductions);
+            
+            // AGI = Gross Income (simplified)
+            const agi = grossIncome;
+            const taxableIncome = Math.max(0, agi - totalDeductions);
 
-<div class="row">
-<label>Short-term Capital Gains</label>
-<div class="input-wrap"><span>$</span><input type="number" id="stcg" value="0"></div>
-<div></div>
-</div>
+            // Calculate tax
+            let tax = 0;
+            let prevLimit = 0;
+            let marginalRate = 0;
 
-<div class="row">
-<label>Long-term Capital Gains</label>
-<div class="input-wrap"><span>$</span><input type="number" id="ltcg" value="0"></div>
-<div></div>
-</div>
+            for (let bracket of brackets) {
+                const taxableInBracket = Math.min(taxableIncome, bracket.max) - prevLimit;
+                if (taxableInBracket > 0) {
+                    tax += taxableInBracket * bracket.rate;
+                    marginalRate = bracket.rate;
+                }
+                prevLimit = bracket.max;
+                if (taxableIncome <= bracket.max) break;
+            }
 
-</div>
-</div>
+            // Child Tax Credit (phased out for high earners)
+            let ctc = dependents * childTaxCredit;
+            const phaseoutStart = filingStatus === 'marriedJoint' ? 400000 : 200000;
+            const phaseoutIncome = Math.max(0, agi - getInflationAdjustedValue(2025, taxYear, phaseoutStart));
+            const phaseoutAmount = Math.floor(phaseoutIncome / 1000) * 50; // $50 per $1K over threshold
+            ctc = Math.max(0, ctc - phaseoutAmount);
+            const finalTax = Math.max(0, tax - ctc);
 
-<!-- ================= Deductions ================= -->
-<div class="accordion">
-<button class="acc-header">Deductions & Credits</button>
-<div class="acc-body">
+            // Effective tax rate
+            const effectiveRate = (finalTax / agi) * 100;
 
-<div class="row">
-<label>Student Loan Interest</label>
-<div class="input-wrap"><span>$</span><input type="number" id="studentLoan" value="0"></div>
-<div class="helper">Max $2,500/person</div>
-</div>
+            // Update display
+            document.getElementById('agi').innerHTML = `<span>${Math.round(agi).toLocaleString()}</span><small></small>`;
+            document.getElementById('taxableIncome').innerHTML = `<span>${Math.round(taxableIncome).toLocaleString()}</span><small></small>`;
+            document.getElementById('totalTax').innerHTML = `<span>${Math.round(finalTax).toLocaleString()}</span><small></small>`;
+            document.getElementById('takeHome').innerHTML = `<span>${Math.round(grossIncome - finalTax).toLocaleString()}</span><small></small>`;
+            document.getElementById('effectiveRate').innerHTML = `${effectiveRate.toFixed(1)}<small>%</small>`;
+            document.getElementById('marginalRate').innerHTML = `${marginalRate * 100}<small>%</small>`;
 
-<div class="row">
-<label>Child & Dependent Care</label>
-<div class="input-wrap"><span>$</span><input type="number" id="care" value="0"></div>
-<div class="helper">$3,000/person, $6,000 total</div>
-</div>
+            showBracketsTable(brackets, taxableIncome, tax, marginalRate, filingStatus);
+        }
 
-<div class="row">
-<label>College Education (Total)</label>
-<div class="input-wrap"><span>$</span><input type="number" id="education" value="0"></div>
-<div class="helper">AOTC / LLC</div>
-</div>
+        function showBracketsTable(brackets, taxableIncome, tax, marginalRate, filingStatus) {
+            let html = `
+                <table class="brackets-table">
+                    <thead>
+                        <tr>
+                            <th>Tax Bracket</th>
+                            <th>Rate</th>
+                            <th>Tax Owed</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
 
-<div class="row">
-<label>IRA Contributions</label>
-<div class="input-wrap"><span>$</span><input type="number" id="ira" value="0"></div>
-<div></div>
-</div>
+            let prevLimit = 0;
+            for (let i = 0; i < brackets.length; i++) {
+                const bracket = brackets[i];
+                const bracketIncome = Math.min(taxableIncome, bracket.max) - prevLimit;
+                const bracketTax = bracketIncome * bracket.rate;
+                const isCurrent = taxableIncome > prevLimit;
+                
+                const range = prevLimit === 0 ? `$0 - $${bracket.max.toLocaleString()}` :
+                           bracket.max === Infinity ? `Over $${prevLimit.toLocaleString()}` :
+                           `$${prevLimit.toLocaleString()} - $${bracket.max.toLocaleString()}`;
 
-<div class="row">
-<label>Mortgage Interest</label>
-<div class="input-wrap"><span>$</span><input type="number" id="mortgage" value="0"></div>
-<div></div>
-</div>
+                html += `
+                    <tr class="${isCurrent ? 'current' : ''}">
+                        <td>${range}</td>
+                        <td>${bracket.rate * 100}%</td>
+                        <td style="font-weight: 700; color: ${bracketTax > 0 ? '#3b82f6' : '#10b981'}">
+                            $${Math.round(bracketTax).toLocaleString()}
+                        </td>
+                    </tr>`;
+                prevLimit = bracket.max;
+                if (taxableIncome <= bracket.max) break;
+            }
 
-<div class="row">
-<label>Charitable Donations</label>
-<div class="input-wrap"><span>$</span><input type="number" id="charity" value="0"></div>
-<div></div>
-</div>
+            html += `
+                    </tbody>
+                </table>`;
 
-</div>
-</div>
+            document.getElementById('bracketsTable').innerHTML = html;
+        }
 
-<!-- ================= Results ================= -->
-<div class="results">
-<table>
-<tr><td>Total Income</td><td id="rIncome">$0</td></tr>
-<tr><td>Total Deductions</td><td id="rDed">$0</td></tr>
-<tr><td>Taxable Income</td><td id="rTaxable">$0</td></tr>
-<tr><td>Regular Taxes</td><td id="rTax">$0</td></tr>
-<tr><td>All Tax Credits</td><td id="rCredits">$0</td></tr>
-<tr class="total"><td>Estimated Refund</td><td id="rRefund">$0</td></tr>
-</table>
-</div>
+        // Event Listeners
+        document.querySelectorAll('.year-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.year-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById('taxYear').value = this.dataset.year;
+                calculateTax();
+            });
+        });
 
-<div class="actions">
-<button onclick="calc()">Calculate</button>
-<button class="clear" onclick="location.reload()">Clear</button>
-</div>
+        document.querySelectorAll('.status-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.status-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                calculateTax();
+            });
+        });
 
-</div>
+        // Auto-calculate
+        ['grossIncome', 'deductions', 'dependents', 'taxYear'].forEach(id => {
+            document.getElementById(id).addEventListener('input', calculateTax);
+        });
 
-<script>
-document.querySelectorAll(".acc-header").forEach(b=>{
-  b.onclick=()=>{b.classList.toggle("active");b.nextElementSibling.classList.toggle("open")}
-});
-document.querySelector(".acc-header").click();
-
-function calc(){
-  const wages=+wagesEl.value;
-  const std=15750;
-  const taxable=Math.max(0,wages-std);
-  const fed=0;
-  const credits=(+depYoung.value*2000)+(+depOther.value*500);
-  const refund=(+fedWithheld.value)+credits;
-  rIncome.innerText="$"+wages;
-  rDed.innerText="$"+std;
-  rTaxable.innerText="$"+taxable;
-  rTax.innerText="$"+fed;
-  rCredits.innerText="$"+credits;
-  rRefund.innerText="$"+refund;
-}
-</script>
-
+        // Initial calculation
+        calculateTax();
+    </script>
 </body>
 </html>
