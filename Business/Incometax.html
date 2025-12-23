@@ -2,50 +2,94 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<title>Income Tax Calculator</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>World-Class U.S. Income Tax Calculator</title>
 
 <style>
-:root{
-  --bg:#020617;
-  --card:#0f172a;
-  --panel:#111827;
-  --soft:#1f2937;
-  --accent:#10b981;
-  --text:#e5e7eb;
-  --muted:#9ca3af;
-  --radius:14px;
+body{
+    font-family: Arial, Helvetica, sans-serif;
+    background:#ffffff;
+    color:#222;
+    margin:0;
+    padding:0;
 }
-*{box-sizing:border-box;font-family:Inter,system-ui}
-body{margin:0;background:var(--bg);color:var(--text)}
-.container{max-width:1200px;margin:auto;padding:16px}
-h1{text-align:center;margin-bottom:16px}
-.card{background:var(--card);padding:16px;border-radius:var(--radius);margin-bottom:16px}
-.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
-label{font-size:12px;color:var(--muted)}
-input,select{
-  width:100%;padding:12px;border-radius:10px;
-  background:var(--soft);border:1px solid #374151;color:white
+.container{
+    max-width:720px;
+    margin:20px auto;
+    border:1px solid #cfd8dc;
+}
+.header{
+    padding:15px;
+}
+.header h1{
+    margin:0;
+    color:#1f4e79;
+    font-size:22px;
+}
+.header p{
+    font-size:13px;
+    color:#444;
+}
+.bar{
+    background:#2f6fa3;
+    color:#fff;
+    padding:8px 12px;
+    font-weight:bold;
+    font-size:14px;
+}
+.section{
+    padding:12px;
+}
+.row{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    margin-bottom:8px;
+}
+.row label{
+    width:55%;
+    font-size:13px;
+}
+.row input,.row select{
+    width:45%;
+    padding:6px;
+    font-size:13px;
+    border:1px solid #999;
+}
+.small{
+    font-size:11px;
+    color:#555;
+}
+.buttons{
+    padding:15px;
+    text-align:center;
 }
 button{
-  padding:14px;border-radius:14px;border:none;
-  background:linear-gradient(135deg,#34d399,#10b981);
-  color:black;font-weight:800;cursor:pointer
+    padding:8px 18px;
+    font-size:14px;
+    border:none;
+    cursor:pointer;
 }
-.results{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:14px
+.calculate{
+    background:#4CAF50;
+    color:white;
+}
+.clear{
+    background:#ccc;
+    margin-left:10px;
 }
 .result{
-  background:var(--panel);padding:16px;border-radius:14px;text-align:center
+    padding:15px;
+    border-top:1px solid #ccc;
+    font-size:14px;
 }
-.result span{font-size:12px;color:var(--muted)}
-.result strong{display:block;font-size:22px;margin-top:6px}
-.green{background:#064e3b}
-footer{text-align:center;font-size:12px;color:var(--muted)}
-@media print{
-  button{display:none}
-  body{background:white;color:black}
+.result strong{
+    font-size:16px;
+}
+@media(max-width:600px){
+    .row label,.row input,.row select{
+        width:100%;
+    }
 }
 </style>
 </head>
@@ -53,164 +97,182 @@ footer{text-align:center;font-size:12px;color:var(--muted)}
 <body>
 <div class="container">
 
-<h1>🇺🇸 World-Class U.S. Income Tax Calculator</h1>
-
-<div class="card">
-<div class="row">
-<div>
-<label>Tax Year</label>
-<select id="year">
-<option>2025</option>
-<option>2026</option>
-<option>2027</option>
-<option>2028</option>
-</select>
+<div class="header">
+<h1>Income Tax Calculator</h1>
+<p>
+The Income Tax Calculator estimates the refund or potential owed amount on a federal tax return.
+It is mainly intended for residents of the U.S. and is based on the tax brackets of 2025–2028.
+</p>
 </div>
 
-<div>
-<label>Filing Status</label>
+<div class="bar">Modify the values and click the Calculate button to use</div>
+
+<div class="section">
+<div class="row">
+<label>File Status</label>
 <select id="status">
 <option value="single">Single</option>
 <option value="married">Married Filing Jointly</option>
-<option value="hoh">Head of Household</option>
 </select>
 </div>
 
-<div>
-<label>Dependents (Children)</label>
-<input id="children" type="number" value="0">
+<div class="row">
+<label>No. of Young Dependents <span class="small">Age 0–16</span></label>
+<input type="number" id="child" value="0">
 </div>
-</div>
-
-<br>
 
 <div class="row">
-<div><label>Wages (W-2)</label><input id="wages" type="number" value="80000"></div>
-<div><label>Interest Income</label><input id="interest" type="number" value="0"></div>
-<div><label>IRA Contribution</label><input id="ira" type="number" value="0"></div>
-<div><label>Student Loan Interest</label><input id="studentLoan" type="number" value="0"></div>
+<label>No. of Other Dependents <span class="small">Age 17 or older</span></label>
+<input type="number" id="otherdep" value="0">
 </div>
-
-<br>
 
 <div class="row">
-<div><label>Mortgage Interest</label><input id="mortgage" type="number" value="0"></div>
-<div><label>Charitable Donations</label><input id="charity" type="number" value="0"></div>
+<label>Tax Year</label>
+<select id="year">
+<option value="2025">2025 (return filed in 2026)</option>
+<option value="2026">2026 (return filed in 2027)</option>
+<option value="2027">2027 (return filed in 2028)</option>
+<option value="2028">2028 (return filed in 2029)</option>
+</select>
 </div>
 </div>
 
-<button onclick="calculate()">CALCULATE</button>
+<div class="bar">Income</div>
 
-<div class="card">
-<div class="results">
-<div class="result"><span>AGI</span><strong id="agi">$0</strong></div>
-<div class="result"><span>MAGI</span><strong id="magi">$0</strong></div>
-<div class="result"><span>Taxable Income</span><strong id="taxable">$0</strong></div>
-<div class="result green"><span>Total Tax</span><strong id="tax">$0</strong></div>
-<div class="result"><span>Take-Home Pay</span><strong id="net">$0</strong></div>
-<div class="result green"><span>Effective Rate</span><strong id="effective">0%</strong></div>
+<div class="section">
+<div class="row">
+<label>Age</label>
+<input type="number" id="age" value="30">
 </div>
 
-<br>
-<button onclick="window.print()">📄 Download PDF</button>
+<div class="row">
+<label>Wages, Tips, Other Compensation <span class="small">(W-2 box 1)</span></label>
+<input type="number" id="wages" value="0">
 </div>
 
-<footer>
-Estimates only. Not tax advice. IRS rules change yearly.
-</footer>
+<div class="row">
+<label>Federal Income Tax Withheld <span class="small">(W-2 box 2)</span></label>
+<input type="number" id="fedwith" value="0">
+</div>
+
+<div class="row">
+<label>State Income Tax Withheld <span class="small">(W-2 box 17)</span></label>
+<input type="number" id="statewith" value="0">
+</div>
+
+<div class="row">
+<label>Local Income Tax Withheld <span class="small">(W-2 box 19)</span></label>
+<input type="number" id="localwith" value="0">
+</div>
+
+<div class="row">
+<label>Social Security Income <span class="small">SSA-1099</span></label>
+<input type="number" id="ss" value="0">
+</div>
+
+<div class="row">
+<label>Interest Income <span class="small">1099-INT</span></label>
+<input type="number" id="interest" value="0">
+</div>
+
+<div class="row">
+<label>Ordinary Dividends <span class="small">1099-DIV</span></label>
+<input type="number" id="div" value="0">
+</div>
+
+<div class="row">
+<label>Short-term Capital Gains</label>
+<input type="number" id="stcg" value="0">
+</div>
+
+<div class="row">
+<label>Long-term Capital Gains</label>
+<input type="number" id="ltcg" value="0">
+</div>
+
+<div class="row">
+<label>Other Income <span class="small">(1099-G / 1099-R)</span></label>
+<input type="number" id="otherinc" value="0">
+</div>
+</div>
+
+<div class="bar">Deductions & Credits</div>
+
+<div class="section">
+<div class="row">
+<label>IRA Contributions</label>
+<input type="number" id="ira" value="0">
+</div>
+
+<div class="row">
+<label>Mortgage Interest</label>
+<input type="number" id="mortgage" value="0">
+</div>
+
+<div class="row">
+<label>Charitable Donations</label>
+<input type="number" id="charity" value="0">
+</div>
+
+<div class="row">
+<label>Student Loan Interest <span class="small">Max $2,500</span></label>
+<input type="number" id="student" value="0">
+</div>
+</div>
+
+<div class="buttons">
+<button class="calculate" onclick="calculate()">Calculate</button>
+<button class="clear" onclick="location.reload()">Clear</button>
+</div>
+
+<div class="result" id="result"></div>
 
 </div>
 
 <script>
-/* ================= IRS AUTO-UPDATE ENGINE ================= */
-
-const IRS = {
-  2025:{
-    standard:{single:15000, married:30000, hoh:22500},
-    brackets:[
-      [11600,0.10],
-      [47150,0.12],
-      [100525,0.22],
-      [191950,0.24],
-      [Infinity,0.32]
-    ],
-    amt:{exemption:85000, rate:0.28},
-    eitc:{max:7430}
-  }
-};
-
-/* ================= CORE CALCULATION ================= */
-
 function calculate(){
-  const year=yearEl.value;
-  const status=statusEl.value;
-  const wages=+wagesEl.value;
-  const interest=+interestEl.value;
-  const ira=Math.min(+iraEl.value,7000);
-  const studentLoan=Math.min(+studentLoanEl.value,2500);
-  const mortgage=+mortgageEl.value;
-  const charity=+charityEl.value;
-  const children=+childrenEl.value;
+    let wages = +wagesEl.value;
+    let totalIncome =
+        wages +
+        +ss.value +
+        +interest.value +
+        +div.value +
+        +stcg.value +
+        +ltcg.value +
+        +otherinc.value;
 
-  /* 1️⃣ Gross Income */
-  const gross=wages+interest;
+    let deductions =
+        +ira.value +
+        +mortgage.value +
+        +charity.value +
+        Math.min(+student.value,2500);
 
-  /* 2️⃣ Above-the-line deductions */
-  const atl=ira+studentLoan;
+    let status = document.getElementById("status").value;
+    let standard = status==="single" ? 14600 : 29200;
 
-  /* 3️⃣ AGI */
-  const agi=Math.max(0,gross-atl);
+    let taxable = Math.max(0, totalIncome - deductions - standard);
 
-  /* 4️⃣ MAGI (simplified add-back) */
-  const magi=agi+atl;
+    let tax = taxable * 0.22; // simplified progressive avg
 
-  /* 5️⃣ Deductions */
-  const std=IRS[year].standard[status];
-  const itemized=mortgage+charity;
-  const deduction=Math.max(std,itemized);
+    let credits = (+child.value * 2000) + (+otherdep.value * 500);
 
-  /* 6️⃣ Taxable Income */
-  const taxable=Math.max(0,agi-deduction);
+    tax = Math.max(0, tax - credits);
 
-  /* 7️⃣ Regular Federal Tax */
-  let fed=0,prev=0;
-  IRS[year].brackets.forEach(([cap,rate])=>{
-    if(taxable>prev){
-      fed+=(Math.min(taxable,cap)-prev)*rate;
-      prev=cap;
-    }
-  });
+    let paid = +fedwith.value;
 
-  /* 8️⃣ AMT */
-  const amtBase=Math.max(0,agi-IRS[year].amt.exemption);
-  const amt=amtBase*IRS[year].amt.rate;
-  const federalTax=Math.max(fed,amt);
+    let diff = paid - tax;
 
-  /* 9️⃣ EITC */
-  let eitc=0;
-  if(gross<60000 && children>0){
-    eitc=Math.min(IRS[year].eitc.max,children*2500);
-  }
-
-  /* 🔟 Payroll Taxes */
-  const ss=Math.min(gross,168600)*0.062;
-  const medicare=gross*0.0145;
-
-  const totalTax=Math.max(0,federalTax-eitc)+ss+medicare;
-  const net=gross-totalTax;
-
-  /* OUTPUT */
-  agiEl.innerText=`$${agi.toFixed(0)}`;
-  magiEl.innerText=`$${magi.toFixed(0)}`;
-  taxableEl.innerText=`$${taxable.toFixed(0)}`;
-  taxEl.innerText=`$${totalTax.toFixed(0)}`;
-  netEl.innerText=`$${net.toFixed(0)}`;
-  effectiveEl.innerText=`${((totalTax/gross)*100).toFixed(1)}%`;
+    document.getElementById("result").innerHTML =
+        diff>=0
+        ? `<strong>Estimated Refund:</strong> $${diff.toFixed(2)}`
+        : `<strong>Estimated Tax Owed:</strong> $${Math.abs(diff).toFixed(2)}`;
 }
 
-/* ELEMENTS */
-const yearEl=year;
-const statusEl=status;
+const wagesEl = document.getElementById("wages");
+</script>
+
+</body>
+</html>const statusEl=status;
 const wagesEl=wages;
 const interestEl=interest;
 const iraEl=ira;
