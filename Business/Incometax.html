@@ -114,98 +114,124 @@ canvas{margin-top:20px}
 <script>
 let chart;
 
-function money(x){return "$"+Math.round(x).toLocaleString()}
+const money = n => "$" + Math.round(n).toLocaleString();
 
 function federalTax(taxable){
-let brackets=[[11000,0.10],[44725,0.12],[95375,0.22],[182100,0.24]];
-let tax=0,prev=0,last=0;
-for(let [limit,rate] of brackets){
-let amt=Math.min(limit-prev,taxable);
-if(amt>0){tax+=amt*rate;taxable-=amt;last=rate}
-prev=limit;
+const brackets = [
+ [11000,0.10],
+ [44725,0.12],
+ [95375,0.22],
+ [182100,0.24]
+];
+let tax = 0, prev = 0, marginal = 0;
+for(const [limit,rate] of brackets){
+ const slice = Math.min(taxable, limit - prev);
+ if(slice > 0){
+   tax += slice * rate;
+   taxable -= slice;
+   marginal = rate;
+ }
+ prev = limit;
 }
-if(taxable>0){tax+=taxable*0.32;last=0.32}
-return [tax,last];
+if(taxable > 0){
+ tax += taxable * 0.32;
+ marginal = 0.32;
+}
+return [tax, marginal];
 }
 
 function calculate(){
-let income=+income.value;
-let growth=+growth.value/100;
-let pretax=+pretax.value;
-let kids=+children.value;
-let years=+years.value;
-let stateR=+stateRate.value/100;
-let type=employment.value;
+let inc = +income.value;
+let growth = +growth.value / 100;
+let pretax = +pretax.value;
+let kids = +children.value;
+let yearsN = +years.value;
+let stateRatePct = +stateRate.value / 100;
+let type = employment.value;
 
-let labels=[],taxes=[],takehomes=[];
-let table=document.getElementById("table");
-table.innerHTML="";
+const table = document.getElementById("table");
+table.innerHTML = "";
 
-for(let y=1;y<=years;y++){
-let agi=income-pretax;
-let standard=13850;
+let labels=[], taxArr=[], takeArr=[];
 
-let itemized=
-+mortgage.value +
-Math.min(+salt.value,10000) +
-+charity.value +
-Math.max(0,+medical.value-(agi*0.075));
+for(let y=1;y<=yearsN;y++){
+ let agi = inc - pretax;
 
-let deduction=Math.max(standard,itemized);
-let taxable=Math.max(0,agi-deduction);
+ // Payroll / SE tax
+ let payroll = type==="w2" ? inc*0.0765 : inc*0.153;
 
-let payroll=type==="w2"?income*0.0765:income*0.153;
-if(type==="se") taxable-=payroll/2;
+ // SE tax adjustment
+ if(type==="se"){
+   agi -= payroll * 0.5;
+ }
 
-let [fed,margin]=federalTax(taxable);
-fed=Math.max(0,fed-(kids*2000));
-let state=taxable*stateR;
-let total=fed+state+payroll;
-let takehome=income-total;
+ // Itemized vs standard
+ const standard = 13850;
+ const itemized =
+   +mortgage.value +
+   Math.min(+salt.value,10000) +
+   +charity.value +
+   Math.max(0, +medical.value - agi*0.075);
 
-labels.push("Year "+y);
-taxes.push(total);
-takehomes.push(takehome);
+ const deduction = Math.max(standard, itemized);
+ const taxable = Math.max(0, agi - deduction);
 
-if(y===1){
-taxableEl.textContent=money(taxable);
-federal.textContent=money(fed);
-stateEl.textContent=money(state);
-fica.textContent=money(payroll);
-totalEl.textContent=money(total);
-takehomeEl.textContent=money(takehome);
-effective.textContent=((total/income)*100).toFixed(2)+"%";
-marginal.textContent=(margin*100).toFixed(0)+"%";
+ let [fed, marginal] = federalTax(taxable);
+
+ // Child tax credit (non-refundable here)
+ fed = Math.max(0, fed - kids*2000);
+
+ const state = taxable * stateRatePct;
+ const total = fed + state + payroll;
+ const take = inc - total;
+
+ if(y===1){
+   taxableEl.textContent = money(taxable);
+   federalEl.textContent = money(fed);
+   stateEl.textContent = money(state);
+   ficaEl.textContent = money(payroll);
+   totalEl.textContent = money(total);
+   takehomeEl.textContent = money(take);
+   effectiveEl.textContent = ((total/inc)*100).toFixed(2)+"%";
+   marginalEl.textContent = (marginal*100).toFixed(0)+"%";
+ }
+
+ table.innerHTML += `
+ <tr>
+  <td>${y}</td>
+  <td>${money(inc)}</td>
+  <td>${money(total)}</td>
+  <td>${money(take)}</td>
+ </tr>`;
+
+ labels.push("Year "+y);
+ taxArr.push(total);
+ takeArr.push(take);
+
+ inc *= (1 + growth);
 }
 
-table.innerHTML+=`<tr>
-<td>${y}</td>
-<td>${money(income)}</td>
-<td>${money(total)}</td>
-<td>${money(takehome)}</td>
-</tr>`;
-
-income*=1+growth;
-}
-
-if(chart)chart.destroy();
-chart=new Chart(document.getElementById("chart"),{
-type:"line",
-data:{labels,datasets:[
-{label:"Total Tax",data:taxes,borderColor:"#ef4444",fill:false},
-{label:"Take-Home",data:takehomes,borderColor:"#22c55e",fill:false}
-]}
+if(chart) chart.destroy();
+chart = new Chart(document.getElementById("chart"),{
+ type:"line",
+ data:{
+  labels,
+  datasets:[
+   {label:"Total Tax",data:taxArr,borderColor:"#ef4444",tension:0.3},
+   {label:"Take-Home",data:takeArr,borderColor:"#22c55e",tension:0.3}
+  ]
+ }
 });
 }
 
 const taxableEl=document.getElementById("taxable");
-const federal=document.getElementById("federal");
+const federalEl=document.getElementById("federal");
 const stateEl=document.getElementById("state");
-const fica=document.getElementById("fica");
+const ficaEl=document.getElementById("fica");
 const totalEl=document.getElementById("total");
 const takehomeEl=document.getElementById("takehome");
-const effective=document.getElementById("effective");
-const marginal=document.getElementById("marginal");
+const effectiveEl=document.getElementById("effective");
+const marginalEl=document.getElementById("marginal");
 </script>
 </body>
 </html>
