@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>USA Income Tax Calculator (Pro)</title>
+<title> Income Tax Calculator </title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -22,15 +22,14 @@ h1{
   color:#2563eb;
   margin-bottom:20px
 }
-
-/* ✅ FIXED GRID WIDTH */
 .grid{
   display:grid;
-  grid-template-columns:1fr 1fr;
+- grid-template-columns:1fr 1.3fr;
++ grid-template-columns:1fr 1fr;
   gap:20px;
   align-items:flex-start
 }
-
+}
 .card{
   background:#fff;
   border-radius:14px;
@@ -64,6 +63,7 @@ button.secondary{
   margin:14px 0
 }
 
+/* ===== RESULTS BOX GRID ===== */
 .results{
   display:grid;
   grid-template-columns:repeat(4,1fr);
@@ -84,6 +84,7 @@ button.secondary{
   color:#6b7280
 }
 
+/* ===== CHART ===== */
 .chart-wrap{
   margin-top:14px
 }
@@ -91,6 +92,7 @@ canvas{
   max-height:200px
 }
 
+/* ===== TABLE SECTION ===== */
 .table-wrap{
   margin-top:26px;
   padding-top:16px;
@@ -115,17 +117,29 @@ th{
   color:#374151
 }
 
-/* Table alignment */
+/* ===== FINAL TABLE ALIGNMENT FIX ===== */
 table th:nth-child(1),
-table td:nth-child(1){text-align:center;width:12%}
+table td:nth-child(1){
+  text-align:center;
+  width:12%;
+}
 table th:nth-child(2),
-table td:nth-child(2){text-align:right;width:29%}
+table td:nth-child(2){
+  text-align:right;
+  width:29%;
+}
 table th:nth-child(3),
-table td:nth-child(3){text-align:right;width:29%}
+table td:nth-child(3){
+  text-align:right;
+  width:29%;
+}
 table th:nth-child(4),
-table td:nth-child(4){text-align:right;width:30%}
+table td:nth-child(4){
+  text-align:right;
+  width:30%;
+}
 
-/* Mobile */
+/* ===== MOBILE EDGE SPACING FIX ===== */
 @media(max-width:900px){
   .grid{grid-template-columns:1fr}
 }
@@ -138,24 +152,208 @@ table td:nth-child(4){text-align:right;width:30%}
 
 <body>
 <div class="container">
-<h1>🇺🇸 USA Income Tax Calculator (Pro)</h1>
+<h1> Income Tax Calculator </h1>
 
 <div class="grid">
 
-<!-- INPUT CARD -->
+<!-- INPUT -->
 <div class="card">
-<!-- (UNCHANGED INPUT CONTENT) -->
-<!-- Your input HTML stays exactly the same -->
+
+<div class="section">Tax Settings</div>
+<label>Tax Year</label>
+<select id="taxYear">
+<option>2025</option>
+<option>2026</option>
+<option>2027</option>
+<option>2028</option>
+</select>
+
+<label>Filing Status</label>
+<select id="filing">
+<option value="single">Single</option>
+<option value="married">Married Filing Jointly</option>
+<option value="hoh">Head of Household</option>
+<option value="widow">Qualifying Widow(er)</option>
+</select>
+
+<div class="section">Income</div>
+<label>Annual Income ($)</label>
+<input id="income" value="85000">
+
+<label>Annual Income Growth (%)</label>
+<input id="growth" value="3">
+
+<label>Pre-Tax Deductions (401k / HSA)</label>
+<input id="pretax" value="5000">
+
+<label>Employment Type</label>
+<select id="employment">
+<option value="w2">W-2 Employee</option>
+<option value="se">Self-Employed (1099)</option>
+</select>
+
+<label>Children (Child Tax Credit)</label>
+<input id="children" value="1">
+
+<div class="section">Itemized Deductions</div>
+<label>Mortgage Interest</label>
+<input id="mortgage" value="6000">
+
+<label>State & Local Taxes (SALT)</label>
+<input id="salt" value="8000">
+
+<label>Charitable Donations</label>
+<input id="charity" value="2000">
+
+<label>Medical Expenses</label>
+<input id="medical" value="1000">
+
+<label>Student Loan Interest</label>
+<input id="studentLoan" value="0">
+
+<div class="section">State & Projection</div>
+<label>State Tax Rate (%)</label>
+<input id="stateRate" value="2">
+
+<label>Projection Years</label>
+<select id="years">
+<option>5</option>
+<option selected>10</option>
+</select>
+
+<button onclick="calculate()">Calculate</button>
+<button class="secondary" onclick="location.reload()">Clear</button>
 </div>
 
-<!-- OUTPUT CARD -->
+<!-- OUTPUT -->
 <div class="card">
-<!-- (UNCHANGED OUTPUT CONTENT) -->
+
+<div class="results">
+<div class="box"><h3 id="taxable">$0</h3><span>Taxable Income</span></div>
+<div class="box"><h3 id="federal">$0</h3><span>Federal Tax</span></div>
+<div class="box"><h3 id="state">$0</h3><span>State Tax</span></div>
+<div class="box"><h3 id="fica">$0</h3><span>Payroll / SE</span></div>
+<div class="box"><h3 id="total">$0</h3><span>Total Tax</span></div>
+<div class="box"><h3 id="takehome">$0</h3><span>Take-Home Pay</span></div>
+<div class="box"><h3 id="effective">0%</h3><span>Effective Rate</span></div>
+<div class="box"><h3 id="marginal">0%</h3><span>Marginal Rate</span></div>
+</div>
+
+<div class="chart-wrap">
+<canvas id="chart"></canvas>
+</div>
+
+<div class="table-wrap">
+<h3>10-Year Income & Tax Projection</h3>
+<table>
+<thead>
+<tr>
+<th>Year</th>
+<th>Income</th>
+<th>Total Tax</th>
+<th>Take-Home</th>
+</tr>
+</thead>
+<tbody id="table"></tbody>
+</table>
+</div>
+
+<button class="secondary" onclick="window.print()">Print</button>
 </div>
 
 </div>
 </div>
 
-<!-- JS UNCHANGED -->
+<script>
+let chart;
+const $=id=>document.getElementById(id);
+const money=n=>"$"+Math.round(n).toLocaleString();
+
+function federalTax(taxable){
+ const brackets=[[11000,.10],[44725,.12],[95375,.22],[182100,.24]];
+ let tax=0,prev=0,m=0;
+ for(const [l,r] of brackets){
+  const slice=Math.min(taxable,l-prev);
+  if(slice>0){tax+=slice*r;taxable-=slice;m=r}
+  prev=l;
+ }
+ if(taxable>0){tax+=taxable*.32;m=.32}
+ return{tax,m};
+}
+
+function calculate(){
+ let income=+$("income").value;
+ let growth=+$("growth").value/100;
+ let pretax=+$("pretax").value;
+ let kids=+$("children").value;
+ let years=+$("years").value;
+ let stateRate=+$("stateRate").value/100;
+ let emp=$("employment").value;
+ let filing=$("filing").value;
+
+ let mortgage=+$("mortgage").value;
+ let salt=Math.min(+$("salt").value,10000);
+ let charity=+$("charity").value;
+ let medical=+$("medical").value;
+ let studentLoan=Math.min(+$("studentLoan").value,2500);
+
+ let table=$("table"); table.innerHTML="";
+ let labels=[],taxes=[],takehomes=[];
+
+ for(let y=1;y<=years;y++){
+  let agi=income-pretax;
+  let payroll=emp==="w2"?income*.0765:income*.153;
+  if(emp==="se") agi-=payroll/2;
+
+  let standard=13850;
+  if(filing==="married"||filing==="widow") standard=27700;
+  if(filing==="hoh") standard=20800;
+
+  let medDed=Math.max(0,medical-(agi*.075));
+  let itemized=mortgage+salt+charity+medDed+studentLoan;
+  let deduction=Math.max(standard,itemized);
+
+  let taxable=Math.max(0,agi-deduction);
+  let fed=federalTax(taxable);
+  let federal=Math.max(0,fed.tax-kids*2000);
+  let state=taxable*stateRate;
+  let total=federal+state+payroll;
+  let takeHome=income-total;
+
+  if(y===1){
+   $("taxable").textContent=money(taxable);
+   $("federal").textContent=money(federal);
+   $("state").textContent=money(state);
+   $("fica").textContent=money(payroll);
+   $("total").textContent=money(total);
+   $("takehome").textContent=money(takeHome);
+   $("effective").textContent=((total/income)*100).toFixed(2)+"%";
+   $("marginal").textContent=(fed.m*100).toFixed(0)+"%";
+  }
+
+  table.innerHTML+=`
+   <tr>
+    <td>${y}</td>
+    <td>${money(income)}</td>
+    <td>${money(total)}</td>
+    <td>${money(takeHome)}</td>
+   </tr>`;
+
+  labels.push("Year "+y);
+  taxes.push(total);
+  takehomes.push(takeHome);
+  income*=1+growth;
+ }
+
+ if(chart) chart.destroy();
+ chart=new Chart($("chart"),{
+  type:"line",
+  data:{labels,datasets:[
+   {label:"Total Tax",data:taxes,borderColor:"#ef4444",tension:.3},
+   {label:"Take-Home Pay",data:takehomes,borderColor:"#22c55e",tension:.3}
+  ]}
+ });
+}
+</script>
 </body>
 </html>
