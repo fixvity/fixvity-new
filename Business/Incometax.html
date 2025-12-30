@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>USA Income Tax Calculator – Federal + State</title>
+<title>USA Income Tax Calculator – Pro Max</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -41,10 +41,7 @@ h1{
   box-shadow:var(--shadow);
   padding:20px;
 }
-label{
-  font-size:13px;
-  color:var(--muted);
-}
+label{font-size:13px;color:var(--muted)}
 input,select,button{
   width:100%;
   padding:10px;
@@ -77,20 +74,15 @@ button.secondary{
   margin:0;
   color:var(--accent);
 }
-.result small{color:var(--muted)}
 canvas{margin-top:20px;max-height:280px}
-@media(max-width:900px){
-  .grid{grid-template-columns:1fr}
-}
-@media print{
-  button{display:none}
-}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+@media print{button{display:none}}
 </style>
 </head>
 
 <body>
 <div class="container">
-<h1>🇺🇸 USA Income Tax Calculator (Federal + State)</h1>
+<h1>🇺🇸 USA Income Tax Calculator (Pro-Max)</h1>
 
 <div class="grid">
 
@@ -100,7 +92,7 @@ canvas{margin-top:20px;max-height:280px}
 <select id="status">
   <option value="single">Single</option>
   <option value="married">Married Filing Jointly</option>
-  <option value="head">Head of Household</option>
+  <option value="hoh">Head of Household</option>
 </select>
 
 <label>Annual Income ($)</label>
@@ -121,7 +113,7 @@ canvas{margin-top:20px;max-height:280px}
 <label>State</label>
 <select id="state"></select>
 
-<button onclick="calculate()">Calculate Tax</button>
+<button onclick="calculate()">Calculate</button>
 <button class="secondary" onclick="resetAll()">Clear</button>
 </div>
 
@@ -139,7 +131,7 @@ canvas{margin-top:20px;max-height:280px}
   <div class="result"><h3 id="rate">0%</h3><small>Effective Rate</small></div>
 </div>
 
-<canvas id="taxChart"></canvas>
+<canvas id="chart"></canvas>
 
 <button class="secondary" onclick="window.print()">Print</button>
 </div>
@@ -148,84 +140,114 @@ canvas{margin-top:20px;max-height:280px}
 </div>
 
 <script>
-const states = {
- "No State Tax":0,
- "Alabama":0.05,"Alaska":0,"Arizona":0.045,"Arkansas":0.049,
- "California":0.06,"Colorado":0.044,"Connecticut":0.055,
- "Delaware":0.052,"Florida":0,"Georgia":0.055,"Hawaii":0.065,
- "Idaho":0.058,"Illinois":0.0495,"Indiana":0.032,
- "Iowa":0.057,"Kansas":0.053,"Kentucky":0.05,"Louisiana":0.04,
- "Maine":0.058,"Maryland":0.057,"Massachusetts":0.05,
- "Michigan":0.0425,"Minnesota":0.062,"Mississippi":0.05,
- "Missouri":0.049,"Montana":0.058,"Nebraska":0.055,
- "Nevada":0,"New Hampshire":0,"New Jersey":0.057,
- "New Mexico":0.049,"New York":0.058,"North Carolina":0.0475,
- "North Dakota":0.025,"Ohio":0.038,"Oklahoma":0.05,
- "Oregon":0.065,"Pennsylvania":0.0307,"Rhode Island":0.055,
- "South Carolina":0.052,"South Dakota":0,"Tennessee":0,
- "Texas":0,"Utah":0.0485,"Vermont":0.058,
- "Virginia":0.051,"Washington":0,"West Virginia":0.05,
- "Wisconsin":0.053,"Wyoming":0
+/* ---------- STATE TAX DATA ---------- */
+const STATE_TAX={
+ "No State Tax":{type:"none"},
+ "Alaska":{type:"none"},"Florida":{type:"none"},"Texas":{type:"none"},
+ "Nevada":{type:"none"},"Washington":{type:"none"},"Wyoming":{type:"none"},
+ "Tennessee":{type:"none"},"New Hampshire":{type:"none"},
+
+ "Illinois":{type:"flat",rate:0.0495},
+ "Pennsylvania":{type:"flat",rate:0.0307},
+ "Colorado":{type:"flat",rate:0.044},
+ "Utah":{type:"flat",rate:0.0465},
+
+ "California":{type:"progressive",brackets:[
+  [10099,0.01],[23942,0.02],[37788,0.04],[52455,0.06],[66295,0.08]
+ ]},
+ "New York":{type:"progressive",brackets:[
+  [8500,0.04],[11700,0.045],[13900,0.0525],[21400,0.059],[80650,0.0621]
+ ]},
+ "New Jersey":{type:"progressive",brackets:[
+  [20000,0.014],[35000,0.0175],[40000,0.035],[75000,0.055]
+ ]},
+ "Georgia":{type:"progressive",brackets:[
+  [750,0.01],[2250,0.02],[3750,0.03],[5250,0.04],[7000,0.05]
+ ]}
 };
 
-const stateSelect = document.getElementById("state");
-Object.keys(states).forEach(s=>{
-  const o=document.createElement("option");
-  o.value=s;o.textContent=s;
-  stateSelect.appendChild(o);
+/* Populate state dropdown */
+const stateSel=document.getElementById("state");
+Object.keys(STATE_TAX).forEach(s=>{
+ let o=document.createElement("option");
+ o.value=s;o.textContent=s;
+ stateSel.appendChild(o);
 });
 
+/* ---------- FEDERAL DATA ---------- */
+const STANDARD_DEDUCTION={
+ single:14600, married:29200, hoh:21900
+};
+
+const FEDERAL_BRACKETS={
+ single:[[11600,.10],[47150,.12],[100525,.22],[191950,.24]],
+ married:[[23200,.10],[94300,.12],[201050,.22],[383900,.24]],
+ hoh:[[16550,.10],[63100,.12],[100500,.22],[191950,.24]]
+};
+
+/* ---------- UTIL ---------- */
 function money(v){return "$"+Math.round(v).toLocaleString();}
 
-function federalTaxCalc(income){
- let tax=0;
- if(income>11000){
-  tax+=11000*0.10;
-  tax+=(income-11000)*0.12;
- }else{
-  tax+=income*0.10;
+function progressiveTax(income,brackets){
+ let tax=0,prev=0;
+ for(const [limit,rate] of brackets){
+  if(income>limit){
+   tax+=(limit-prev)*rate;
+   prev=limit;
+  }else{
+   tax+=(income-prev)*rate;
+   return tax;
+  }
  }
  return tax;
 }
 
+function stateTaxCalc(state,income){
+ const s=STATE_TAX[state];
+ if(!s||income<=0) return 0;
+ if(s.type==="none") return 0;
+ if(s.type==="flat") return income*s.rate;
+ if(s.type==="progressive") return progressiveTax(income,s.brackets);
+ return 0;
+}
+
 let chart;
 
+/* ---------- MAIN ---------- */
 function calculate(){
- const income=+income.value||0;
- const pretax=+pretax.value||0;
- const status=status.value;
- const self=self.value;
- const kids=+kids.value||0;
- const state=stateSelect.value;
+ const income=+document.getElementById("income").value||0;
+ const pretax=+document.getElementById("pretax").value||0;
+ const status=document.getElementById("status").value;
+ const self=document.getElementById("self").value;
+ const kids=+document.getElementById("kids").value||0;
+ const state=document.getElementById("state").value;
 
- const std={single:14600,married:29200,head:21900};
- let adj=Math.max(income-pretax,0);
- let taxable=Math.max(adj-std[status],0);
+ const adj=Math.max(income-pretax,0);
+ const taxable=Math.max(adj-STANDARD_DEDUCTION[status],0);
 
- let fed=federalTaxCalc(taxable);
- let ctc=Math.min(kids*2000,fed);
- fed-=ctc;
+ let fed=progressiveTax(taxable,FEDERAL_BRACKETS[status]);
+ fed=Math.max(fed-kids*2000,0);
 
- let payroll=self==="yes"?adj*0.153:Math.min(adj,168600)*0.062+adj*0.0145;
- let st=adj*states[state];
+ let payroll=self==="yes"?adj*0.153:Math.min(adj,168600)*0.0765;
+ let st=stateTaxCalc(state,adj);
 
  let total=fed+payroll+st;
  let take=income-total;
- let eff=income?total/income*100:0;
+ let eff=income?(total/income*100):0;
 
  taxableEl.innerText=money(taxable);
  federal.innerText=money(fed);
  stateTax.innerText=money(st);
  payroll.innerText=money(payroll);
- totalEl.innerText=money(total);
- takeEl.innerText=money(take);
+ total.innerText=money(total);
+ take.innerText=money(take);
  rate.innerText=eff.toFixed(1)+"%";
 
- if(chart)chart.destroy();
- chart=new Chart(taxChart,{
-  type:"doughnut",
+ if(chart) chart.destroy();
+ chart=new Chart(document.getElementById("chart"),{
+  type:"pie",
   data:{
-   labels:["Federal","State","Payroll","Take Home"],
+   labels:["Federal","State","Payroll","Take-Home"],
    datasets:[{
     data:[fed,st,payroll,take],
     backgroundColor:["#ef4444","#f59e0b","#8b5cf6","#22c55e"]
@@ -235,10 +257,10 @@ function calculate(){
 }
 
 function resetAll(){
- document.querySelectorAll("input").forEach(i=>i.value="");
+ document.querySelectorAll("input").forEach(i=>i.value=0);
  document.querySelectorAll(".result h3").forEach(h=>h.innerText="$0");
  rate.innerText="0%";
- if(chart)chart.destroy();
+ if(chart) chart.destroy();
 }
 </script>
 </body>
