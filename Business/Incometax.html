@@ -2,8 +2,22 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>USA Income Tax Calculator</title>
+<title>USA Income Tax Calculator (Federal + State)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- SEO Schema -->
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"FinancialProduct",
+  "name":"USA Income Tax Calculator",
+  "description":"Calculate US federal, state, payroll taxes and take-home pay instantly.",
+  "areaServed":"US",
+  "audience":{"@type":"Audience","geographicArea":"United States"}
+}
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 :root{
@@ -25,11 +39,7 @@ body{
   margin:auto;
   padding:20px;
 }
-h1{
-  text-align:center;
-  color:var(--accent);
-  margin-bottom:20px;
-}
+h1{text-align:center;color:var(--accent)}
 .grid{
   display:grid;
   grid-template-columns:1fr 1fr;
@@ -41,28 +51,16 @@ h1{
   box-shadow:var(--shadow);
   padding:20px;
 }
-label{
-  font-size:13px;
-  color:var(--muted);
-}
+label{font-size:13px;color:var(--muted)}
 input,select,button{
   width:100%;
   padding:10px;
   margin:6px 0 14px;
   border-radius:10px;
   border:1px solid #e5e7eb;
-  font-size:15px;
 }
-button{
-  background:var(--accent);
-  color:#fff;
-  border:none;
-  cursor:pointer;
-}
-button.secondary{
-  background:#eef2ff;
-  color:#111;
-}
+button{background:var(--accent);color:#fff;border:none;cursor:pointer}
+button.secondary{background:#eef2ff;color:#111}
 .results{
   display:grid;
   grid-template-columns:repeat(3,1fr);
@@ -74,17 +72,20 @@ button.secondary{
   padding:14px;
   text-align:center;
 }
-.box h3{
-  margin:0;
-  color:var(--accent);
+.box h3{margin:0;color:var(--accent)}
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:16px;
 }
-.box span{
-  font-size:13px;
-  color:var(--muted);
+th,td{
+  border-bottom:1px solid #e5e7eb;
+  padding:8px;
+  text-align:right;
 }
-@media(max-width:900px){
-  .grid{grid-template-columns:1fr}
-}
+th{text-align:left;color:var(--muted)}
+canvas{max-height:260px;margin-top:20px}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
 </style>
 </head>
 
@@ -115,21 +116,13 @@ button.secondary{
   <option value="yes">Yes</option>
 </select>
 
-<label>Children (Child Tax Credit)</label>
+<label>Children (CTC)</label>
 <input id="kids" value="1">
 
 <label>State</label>
 <select id="state">
   <option value="0">No State Tax</option>
   <option value="0.05">Flat 5%</option>
-</select>
-
-<label>View Mode</label>
-<select id="mode">
-  <option value="annual">Annual</option>
-  <option value="monthly">Monthly</option>
-  <option value="biweekly">Bi-Weekly</option>
-  <option value="weekly">Weekly</option>
 </select>
 
 <button onclick="calc()">Calculate Tax</button>
@@ -140,13 +133,23 @@ button.secondary{
 <div class="card">
 <div class="results">
   <div class="box"><h3 id="taxable">$0</h3><span>Taxable Income</span></div>
-  <div class="box"><h3 id="fed">$0</h3><span>Federal Tax</span></div>
-  <div class="box"><h3 id="stateTax">$0</h3><span>State Tax</span></div>
-  <div class="box"><h3 id="fica">$0</h3><span>Payroll / SE Tax</span></div>
   <div class="box"><h3 id="total">$0</h3><span>Total Tax</span></div>
   <div class="box"><h3 id="take">$0</h3><span>Take-Home Pay</span></div>
-  <div class="box"><h3 id="rate">0%</h3><span>Effective Rate</span></div>
+  <div class="box"><h3 id="fed">$0</h3><span>Federal</span></div>
+  <div class="box"><h3 id="fica">$0</h3><span>Payroll / SE</span></div>
+  <div class="box"><h3 id="stateTax">$0</h3><span>State</span></div>
 </div>
+
+<table>
+<tr><th>Tax Type</th><th>Amount</th></tr>
+<tr><td>Federal Income Tax</td><td id="tFed">$0</td></tr>
+<tr><td>Payroll / SE Tax</td><td id="tFica">$0</td></tr>
+<tr><td>State Tax</td><td id="tState">$0</td></tr>
+<tr><th>Total Tax</th><th id="tTotal">$0</th></tr>
+</table>
+
+<canvas id="pie"></canvas>
+<canvas id="bar"></canvas>
 
 <button class="secondary" onclick="window.print()">Print</button>
 </div>
@@ -157,66 +160,62 @@ button.secondary{
 <script>
 function money(x){return "$"+Math.round(x).toLocaleString()}
 
-function federalTax(income){
-  const brackets=[
-    [11600,0.10],
-    [47150,0.12],
-    [100525,0.22],
-    [191950,0.24]
-  ];
-  let tax=0,prev=0;
-  for(let [limit,rate] of brackets){
-    if(income>limit){
-      tax+=(limit-prev)*rate;
-      prev=limit;
-    }else{
-      tax+=(income-prev)*rate;
-      return tax;
-    }
-  }
-  return tax+(income-prev)*0.32;
+function fedTax(x){
+ let tax=0;
+ const b=[[11600,.1],[47150,.12],[100525,.22],[191950,.24]];
+ let p=0;
+ for(let [l,r] of b){
+  if(x>l){tax+=(l-p)*r;p=l}else return tax+(x-p)*r;
+ }
+ return tax+(x-p)*.32;
 }
 
 function calc(){
-  let gross=+income.value;
-  let pretaxDed=+pretax.value;
-  let adjIncome=gross-pretaxDed;
+ let g=+income.value;
+ let pre=+pretax.value;
+ let adj=g-pre;
 
-  let stdDed= status.value==="single"?14600:
-             status.value==="married"?29200:21900;
+ let std=status.value==="single"?14600:status.value==="married"?29200:21900;
+ let taxable=Math.max(0,adj-std);
 
-  let taxable=Math.max(0,adjIncome-stdDed);
+ let fed=fedTax(taxable);
+ fed=Math.max(0,fed-(+kids.value*2000));
 
-  let fed=federalTax(taxable);
+ let fica=self.value==="yes"?adj*.153:adj*.0765;
+ let stateT=taxable*(+state.value);
 
-  let ctc=+kids.value*2000;
-  fed=Math.max(0,fed-ctc);
+ let total=fed+fica+stateT;
+ let take=g-total-pre;
 
-  let fica= self.value==="yes" ? adjIncome*0.153 : adjIncome*0.0765;
+ taxable.innerText=money(taxable);
+ fed.innerText=money(fed);
+ fica.innerText=money(fica);
+ stateTax.innerText=money(stateT);
+ totalEl.innerText=money(total);
+ take.innerText=money(take);
 
-  let stateT= taxable*(+state.value);
+ tFed.innerText=money(fed);
+ tFica.innerText=money(fica);
+ tState.innerText=money(stateT);
+ tTotal.innerText=money(total);
 
-  let totalTax=fed+fica+stateT;
-  let takeHome=gross-totalTax-pretaxDed;
+ if(window.p)window.p.destroy();
+ window.p=new Chart(pie,{
+  type:"pie",
+  data:{
+   labels:["Federal","Payroll","State"],
+   datasets:[{data:[fed,fica,stateT],backgroundColor:["#2563eb","#22c55e","#f59e0b"]}]
+  }
+ });
 
-  let divisor= mode.value==="monthly"?12:
-               mode.value==="biweekly"?26:
-               mode.value==="weekly"?52:1;
-
-  taxable/=divisor;
-  fed/=divisor;
-  fica/=divisor;
-  stateT/=divisor;
-  totalTax/=divisor;
-  takeHome/=divisor;
-
-  document.getElementById("taxable").innerText=money(taxable);
-  document.getElementById("fed").innerText=money(fed);
-  document.getElementById("fica").innerText=money(fica);
-  document.getElementById("stateTax").innerText=money(stateT);
-  document.getElementById("total").innerText=money(totalTax);
-  document.getElementById("take").innerText=money(takeHome);
-  document.getElementById("rate").innerText=((totalTax*divisor/gross)*100).toFixed(1)+"%";
+ if(window.b)window.b.destroy();
+ window.b=new Chart(bar,{
+  type:"bar",
+  data:{
+   labels:["Total Tax","Take-Home"],
+   datasets:[{data:[total,take],backgroundColor:["#ef4444","#2563eb"]}]
+  }
+ });
 }
 </script>
 </body>
