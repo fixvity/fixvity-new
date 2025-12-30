@@ -2,21 +2,21 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>USA Income Tax Calculator – Pro</title>
+<title>USA Income Tax Calculator (Pro)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 body{margin:0;font-family:Inter,system-ui;background:#f5f7fb}
 .container{max-width:1300px;margin:auto;padding:20px}
-h1{text-align:center;color:#2563eb}
+h1{text-align:center;color:#2563eb;margin-bottom:20px}
 .grid{display:grid;grid-template-columns:1fr 1.3fr;gap:20px}
 .card{background:#fff;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.08);padding:20px}
 label{font-size:13px;color:#6b7280}
 input,select,button{width:100%;padding:10px;margin:6px 0 14px;border-radius:10px;border:1px solid #e5e7eb}
 button{background:#2563eb;color:#fff;border:none;cursor:pointer}
 button.secondary{background:#eef2ff;color:#111}
-.section{font-weight:700;margin:10px 0}
+.section{font-weight:700;margin:14px 0}
 .results{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 .box{background:#f8fafc;border-radius:12px;padding:14px;text-align:center}
 .box h3{margin:0;color:#2563eb}
@@ -85,6 +85,7 @@ canvas{margin-top:20px}
 
 <!-- OUTPUT -->
 <div class="card">
+
 <div class="results">
 <div class="box"><h3 id="taxable">$0</h3><span>Taxable Income</span></div>
 <div class="box"><h3 id="federal">$0</h3><span>Federal Tax</span></div>
@@ -113,125 +114,113 @@ canvas{margin-top:20px}
 
 <script>
 let chart;
-
+const $ = id => document.getElementById(id);
 const money = n => "$" + Math.round(n).toLocaleString();
 
+/* FEDERAL TAX BRACKETS (SINGLE) */
 function federalTax(taxable){
-const brackets = [
- [11000,0.10],
- [44725,0.12],
- [95375,0.22],
- [182100,0.24]
-];
-let tax = 0, prev = 0, marginal = 0;
-for(const [limit,rate] of brackets){
- const slice = Math.min(taxable, limit - prev);
- if(slice > 0){
-   tax += slice * rate;
-   taxable -= slice;
-   marginal = rate;
+ const brackets = [
+  [11000,0.10],
+  [44725,0.12],
+  [95375,0.22],
+  [182100,0.24]
+ ];
+ let tax=0,prev=0,marginal=0;
+ for(const [limit,rate] of brackets){
+  const slice=Math.min(taxable,limit-prev);
+  if(slice>0){
+   tax+=slice*rate;
+   taxable-=slice;
+   marginal=rate;
+  }
+  prev=limit;
  }
- prev = limit;
-}
-if(taxable > 0){
- tax += taxable * 0.32;
- marginal = 0.32;
-}
-return [tax, marginal];
+ if(taxable>0){tax+=taxable*0.32;marginal=0.32}
+ return {tax,marginal};
 }
 
 function calculate(){
-let inc = +income.value;
-let growth = +growth.value / 100;
-let pretax = +pretax.value;
-let kids = +children.value;
-let yearsN = +years.value;
-let stateRatePct = +stateRate.value / 100;
-let type = employment.value;
 
-const table = document.getElementById("table");
-table.innerHTML = "";
+ let baseIncome = +$("income").value;
+ let growthRate = +$("growth").value/100;
+ let pretax = +$("pretax").value;
+ let kids = +$("children").value;
+ let years = +$("years").value;
+ let stateRate = +$("stateRate").value/100;
+ let employment = $("employment").value;
 
-let labels=[], taxArr=[], takeArr=[];
+ let mortgage = +$("mortgage").value;
+ let salt = +$("salt").value;
+ let charity = +$("charity").value;
+ let medical = +$("medical").value;
 
-for(let y=1;y<=yearsN;y++){
- let agi = inc - pretax;
+ let income = baseIncome;
+ let labels=[], taxes=[], takehomes=[];
+ $("table").innerHTML="";
 
- // Payroll / SE tax
- let payroll = type==="w2" ? inc*0.0765 : inc*0.153;
+ for(let y=1;y<=years;y++){
 
- // SE tax adjustment
- if(type==="se"){
-   agi -= payroll * 0.5;
+  let agi = income - pretax;
+
+  let payroll = employment==="w2"
+   ? income*0.0765
+   : income*0.153;
+
+  if(employment==="se") agi -= payroll/2;
+
+  let medicalDed = Math.max(0, medical - (agi*0.075));
+  let itemized = mortgage + Math.min(salt,10000) + charity + medicalDed;
+  let standard = 13850;
+  let deduction = Math.max(standard,itemized);
+
+  let taxableIncome = Math.max(0, agi - deduction);
+
+  let fed = federalTax(taxableIncome);
+  let federal = Math.max(0, fed.tax - kids*2000);
+  let state = taxableIncome*stateRate;
+
+  let totalTax = federal + payroll + state;
+  let takeHome = income - totalTax;
+
+  if(y===1){
+   $("taxable").textContent=money(taxableIncome);
+   $("federal").textContent=money(federal);
+   $("state").textContent=money(state);
+   $("fica").textContent=money(payroll);
+   $("total").textContent=money(totalTax);
+   $("takehome").textContent=money(takeHome);
+   $("effective").textContent=((totalTax/income)*100).toFixed(2)+"%";
+   $("marginal").textContent=(fed.marginal*100).toFixed(0)+"%";
+  }
+
+  $("table").innerHTML+=`
+  <tr>
+   <td>${y}</td>
+   <td>${money(income)}</td>
+   <td>${money(totalTax)}</td>
+   <td>${money(takeHome)}</td>
+  </tr>`;
+
+  labels.push("Year "+y);
+  taxes.push(totalTax);
+  takehomes.push(takeHome);
+
+  income*=1+growthRate;
  }
 
- // Itemized vs standard
- const standard = 13850;
- const itemized =
-   +mortgage.value +
-   Math.min(+salt.value,10000) +
-   +charity.value +
-   Math.max(0, +medical.value - agi*0.075);
-
- const deduction = Math.max(standard, itemized);
- const taxable = Math.max(0, agi - deduction);
-
- let [fed, marginal] = federalTax(taxable);
-
- // Child tax credit (non-refundable here)
- fed = Math.max(0, fed - kids*2000);
-
- const state = taxable * stateRatePct;
- const total = fed + state + payroll;
- const take = inc - total;
-
- if(y===1){
-   taxableEl.textContent = money(taxable);
-   federalEl.textContent = money(fed);
-   stateEl.textContent = money(state);
-   ficaEl.textContent = money(payroll);
-   totalEl.textContent = money(total);
-   takehomeEl.textContent = money(take);
-   effectiveEl.textContent = ((total/inc)*100).toFixed(2)+"%";
-   marginalEl.textContent = (marginal*100).toFixed(0)+"%";
- }
-
- table.innerHTML += `
- <tr>
-  <td>${y}</td>
-  <td>${money(inc)}</td>
-  <td>${money(total)}</td>
-  <td>${money(take)}</td>
- </tr>`;
-
- labels.push("Year "+y);
- taxArr.push(total);
- takeArr.push(take);
-
- inc *= (1 + growth);
+ if(chart) chart.destroy();
+ chart=new Chart($("chart"),{
+  type:"line",
+  data:{
+   labels,
+   datasets:[
+    {label:"Total Tax",data:taxes,borderColor:"#ef4444",tension:.3},
+    {label:"Take-Home Pay",data:takehomes,borderColor:"#22c55e",tension:.3}
+   ]
+  }
+ });
 }
-
-if(chart) chart.destroy();
-chart = new Chart(document.getElementById("chart"),{
- type:"line",
- data:{
-  labels,
-  datasets:[
-   {label:"Total Tax",data:taxArr,borderColor:"#ef4444",tension:0.3},
-   {label:"Take-Home",data:takeArr,borderColor:"#22c55e",tension:0.3}
-  ]
- }
-});
-}
-
-const taxableEl=document.getElementById("taxable");
-const federalEl=document.getElementById("federal");
-const stateEl=document.getElementById("state");
-const ficaEl=document.getElementById("fica");
-const totalEl=document.getElementById("total");
-const takehomeEl=document.getElementById("takehome");
-const effectiveEl=document.getElementById("effective");
-const marginalEl=document.getElementById("marginal");
 </script>
+
 </body>
 </html>
